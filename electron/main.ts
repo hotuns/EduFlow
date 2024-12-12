@@ -3,8 +3,13 @@ import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
+console.log('main.ts')
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+import Store from 'electron-store';
+Store.initRenderer();
+
 
 // The built directory structure
 //
@@ -31,6 +36,8 @@ function createWindow() {
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
+      nodeIntegration: true,
+      contextIsolation: false,
     },
   })
 
