@@ -4,8 +4,8 @@ import type { VideoState } from './datas'
 interface User {
     name: string;
     videoStates: VideoState[];
-    result: number;
-    resultTime: number;
+    examScore?: number;
+    examTime?: number;
 }
 
 export const useStore = () => {
@@ -30,8 +30,8 @@ export const useStore = () => {
                 {
                     name,
                     videoStates: [],
-                    result: 0,
-                    resultTime: 0
+                    examScore: undefined,
+                    examTime: undefined
                 },
                 ...getUsers.value
             ])
@@ -53,11 +53,22 @@ export const useStore = () => {
         }
     }
 
+    const saveExamResult = (userName: string, score: number) => {
+        const users = getUsers.value
+        const userIndex = users.findIndex(u => u.name === userName)
+        if (userIndex >= 0) {
+            users[userIndex].examScore = score
+            users[userIndex].examTime = Date.now()
+            store.set('users', users)
+        }
+    }
+
     return {
         store,
         getUsers,
         userLogin,
         getVideoStates,
-        saveVideoStates
+        saveVideoStates,
+        saveExamResult
     }
 }
