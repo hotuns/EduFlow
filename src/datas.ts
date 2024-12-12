@@ -10,3 +10,10 @@ export const videos = [
         url: '/videos/2.mp4',
     },
 ]
+
+// 添加视频状态类型定义
+export interface VideoState {
+    id: number
+    completed: boolean
+    lastPosition: number
+}

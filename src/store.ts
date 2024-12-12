@@ -1,18 +1,21 @@
 import Store from 'electron-store';
+import type { VideoState } from './datas'
 
 interface User {
     name: string;
-    doneVideos: number[];
+    videoStates: VideoState[];
     result: number;
     resultTime: number;
 }
 
 export const useStore = () => {
     const store = new Store();
+    // 清空
+    // store.clear()
+
 
     const getUsers = computed(() => {
         const list = store.get('users') as User[]
-        console.log(list)
         if (!list) {
             store.set('users', [])
             return []
@@ -21,14 +24,14 @@ export const useStore = () => {
     })
 
     const userLogin = (name: string) => {
-        const user = getUsers.value.find((user: any) => user.name === name)
+        const user = getUsers.value.find((user: User) => user.name === name)
         if (!user) {
             store.set('users', [
                 {
                     name,
-                    doneVideos: [],
-                    result: 1,
-                    resultTime: 1
+                    videoStates: [],
+                    result: 0,
+                    resultTime: 0
                 },
                 ...getUsers.value
             ])
@@ -36,9 +39,25 @@ export const useStore = () => {
         return user
     }
 
+    const getVideoStates = (userName: string) => {
+        const user = getUsers.value.find(u => u.name === userName)
+        return user?.videoStates || []
+    }
+
+    const saveVideoStates = (userName: string, states: VideoState[]) => {
+        const users = getUsers.value
+        const userIndex = users.findIndex(u => u.name === userName)
+        if (userIndex >= 0) {
+            users[userIndex].videoStates = states
+            store.set('users', users)
+        }
+    }
+
     return {
         store,
         getUsers,
-        userLogin
+        userLogin,
+        getVideoStates,
+        saveVideoStates
     }
 }
