@@ -52,7 +52,15 @@
             <n-button type="info" @click="exportAsPDF" :loading="exporting">
                 导出为PDF
             </n-button>
+            <n-button @click="handleRestart">
+                重新开始
+            </n-button>
         </div>
+
+        <!-- 重新开始确认对话框 -->
+        <n-modal v-model:show="showConfirm" preset="dialog" type="warning" title="提示" content="确定要重新开始吗？这将清除当前用户信息。"
+            positive-text="确定" negative-text="取消" @positive-click="confirmRestart"
+            @negative-click="showConfirm = false" />
     </div>
 </template>
 
@@ -67,6 +75,8 @@ const userName = inject('userName') as Ref<string>
 const resultRef = ref<HTMLElement>()
 const exporting = ref(false)
 const message = useMessage()
+const emit = defineEmits(['restart'])
+const showConfirm = ref(false)
 
 const currentUser = computed(() => {
     return getUsers.value.find((user: any) => user.name === userName.value)
@@ -136,6 +146,16 @@ const exportAsPDF = async () => {
     } finally {
         exporting.value = false
     }
+}
+
+// 处理重新开始
+const handleRestart = () => {
+    showConfirm.value = true
+}
+
+// 确认重新开始
+const confirmRestart = () => {
+    emit('restart')
 }
 </script>
 
