@@ -1,6 +1,11 @@
 import { createApp } from 'vue'
-import './style.css'
 import App from './App.vue'
+
+import '@unocss/reset/normalize.css'
+import 'virtual:uno.css'
+import './style.css'
+import './store'
+
 
 createApp(App).mount('#app').$nextTick(() => {
   // Use contextBridge
@@ -9,4 +14,3 @@ createApp(App).mount('#app').$nextTick(() => {
   })
 })
 
-import './store'

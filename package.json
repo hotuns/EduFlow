@@ -9,15 +9,20 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@unocss/reset": "^0.65.1",
     "vue": "^3.4.21",
     "vue-router": "4"
   },
   "devDependencies": {
-    "electron-store": "^10.0.0",
     "@vitejs/plugin-vue": "^5.0.4",
     "electron": "^30.0.1",
     "electron-builder": "^24.13.3",
+    "electron-store": "^10.0.0",
+    "naive-ui": "^2.40.3",
     "typescript": "^5.2.2",
+    "unocss": "^0.65.1",
+    "unplugin-auto-import": "^0.18.6",
+    "unplugin-vue-components": "^0.27.5",
     "vite": "^5.1.6",
     "vite-plugin-electron": "^0.28.6",
     "vite-plugin-electron-renderer": "^0.14.5",
