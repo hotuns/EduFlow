@@ -1,1 +1,4 @@
-"use strict";const e=require("electron");console.log("preload.ts");window.ipcRenderer=e.ipcRenderer;
+"use strict";
+const electron = require("electron");
+console.log("preload.ts");
+window.ipcRenderer = electron.ipcRenderer;
