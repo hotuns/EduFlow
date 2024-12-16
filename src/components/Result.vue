@@ -66,7 +66,6 @@
 
 <script setup lang="ts">
 import { useStore } from '../store'
-import { videos } from '../datas'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
 

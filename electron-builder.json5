@@ -7,7 +7,7 @@
   directories: {
     output: "release/${version}",
   },
-  files: ["dist", "dist-electron"],
+  files: ["dist/**/*", "dist-electron/**/*"],
   mac: {
     target: ["dmg"],
     artifactName: "${productName}-Mac-${version}-Installer.${ext}",
@@ -31,4 +31,10 @@
     target: ["AppImage"],
     artifactName: "${productName}-Linux-${version}.${ext}",
   },
+  extraResources: [
+    {
+      from: "data",
+      to: "data",
+    },
+  ],
 }

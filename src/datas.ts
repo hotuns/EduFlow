@@ -1,6 +1,3 @@
-import v_list from './vides.json'
-import q_list from './questions.json'
-
 // 添加视频状态类型定义
 export interface VideoState {
     id: number
@@ -8,8 +5,12 @@ export interface VideoState {
     lastPosition: number
 }
 
-// 视频列表
-export const videos = v_list as { id: number, title: string, url: string }[]
+// 视频列表接口
+export interface Video {
+    id: number
+    title: string
+    url: string
+}
 
 // 定义题目类型
 export type QuestionType = 'choice' | 'judgment' | 'essay'
@@ -30,10 +31,6 @@ export interface Question {
     keywords?: string[]  // 阐述题的关键词
     score?: number      // 分值会在代码中设置
 }
-
-
-// 考试题目数据
-export const questions = q_list as Question[]
 
 // 定义题目分值
 export const QUESTION_SCORES = {
@@ -78,3 +75,46 @@ export const getRandomQuestions = (questions: Question[]): Question[] => {
     }))
 }
 
+// 数据加载函数
+class DataManager {
+    private videos: Video[] = []
+    private questions: Question[] = []
+    private dataPath: string = ''
+    private initialized = false
+
+    async init() {
+        if (this.initialized) return
+
+        try {
+            this.dataPath = await window.ipcRenderer.invoke('get-data-path')
+            this.videos = await this.loadJson('videos.json')
+            this.questions = await this.loadJson('questions.json')
+            this.initialized = true
+            console.log('Data initialized successfully')
+            console.log('Data path:', this.dataPath)
+            console.log('Videos:', this.videos)
+            console.log('Questions:', this.questions)
+        } catch (error) {
+            console.error('Failed to initialize data:', error)
+            throw error
+        }
+    }
+
+    private async loadJson(filename: string) {
+        return window.ipcRenderer.invoke('load-json', filename)
+    }
+
+    getVideos() {
+        return this.videos
+    }
+
+    getQuestions() {
+        return this.questions
+    }
+
+    getDataPath() {
+        return this.dataPath
+    }
+}
+
+export const dataManager = new DataManager()

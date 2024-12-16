@@ -5,6 +5,7 @@ import '@unocss/reset/normalize.css'
 import 'virtual:uno.css'
 import './style.css'
 import './store'
+import { dataManager } from './datas'
 
 
 createApp(App).mount('#app').$nextTick(() => {
@@ -12,5 +13,7 @@ createApp(App).mount('#app').$nextTick(() => {
   window.ipcRenderer.on('main-process-message', (_event, message) => {
     console.log(message)
   })
+
+  dataManager.init()
 })
 
