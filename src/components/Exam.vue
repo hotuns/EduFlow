@@ -16,8 +16,8 @@
                     <div class="text-lg font-bold mb-4 pb-2 border-b">
                         选择题（每题{{ QUESTION_SCORES.choice }}分，共{{ choiceQuestions.length * QUESTION_SCORES.choice }}分）
                     </div>
-                    <div v-for="question in choiceQuestions" :key="question.id" class="mb-8 relative">
-                        <n-form-item :label="`${question.id}. ${question.title}`" :path="`q${question.id}`">
+                    <div v-for="(question, index) in choiceQuestions" :key="question.id" class="mb-8 relative">
+                        <n-form-item :label="`${index + 1}. ${question.title}`" :path="`q${question.id}`">
                             <n-radio-group v-model:value="answers[`q${question.id}`]">
                                 <n-space vertical>
                                     <n-radio v-for="option in question.options" :key="option.value"
@@ -36,8 +36,8 @@
                         判断题（每题{{ QUESTION_SCORES.judgment }}分，共{{ judgmentQuestions.length * QUESTION_SCORES.judgment
                         }}分）
                     </div>
-                    <div v-for="question in judgmentQuestions" :key="question.id" class="mb-8 relative">
-                        <n-form-item :label="`${question.id}. ${question.title}`" :path="`q${question.id}`">
+                    <div v-for="(question, index) in judgmentQuestions" :key="question.id" class="mb-8 relative">
+                        <n-form-item :label="`${index + 1}. ${question.title}`" :path="`q${question.id}`">
                             <n-radio-group v-model:value="answers[`q${question.id}`]">
                                 <n-space>
                                     <n-radio value="A">正确</n-radio>
@@ -53,8 +53,8 @@
                     <div class="text-lg font-bold mb-4 pb-2 border-b">
                         阐述题（每题{{ QUESTION_SCORES.essay }}分，共{{ essayQuestions.length * QUESTION_SCORES.essay }}分）
                     </div>
-                    <div v-for="question in essayQuestions" :key="question.id" class="mb-8 relative">
-                        <n-form-item :label="`${question.id}. ${question.title}`" :path="`q${question.id}`">
+                    <div v-for="(question, index) in essayQuestions" :key="question.id" class="mb-8 relative">
+                        <n-form-item :label="`${index + 1}. ${question.title}`" :path="`q${question.id}`">
                             <n-input v-model:value="answers[`q${question.id}`]" type="textarea" placeholder="请输入你的答案"
                                 :rows="4" />
                         </n-form-item>
