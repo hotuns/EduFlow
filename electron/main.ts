@@ -1,7 +1,8 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import fs from 'fs'
 
 console.log('main.ts')
 const require = createRequire(import.meta.url)
@@ -31,6 +32,37 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 
 
 let win: BrowserWindow | null
 
+// 定义数据目录
+const DATA_DIR = app.isPackaged
+  ? path.join(process.resourcesPath, 'data')  // 打包后的路径
+  : path.join(process.env.APP_ROOT!, 'data')  // 开发时的路径
+
+// 添加IPC处理器
+ipcMain.handle('get-data-path', () => DATA_DIR)
+
+// 读取JSON文件
+ipcMain.handle('load-json', async (_, filename: string) => {
+  const filePath = path.join(DATA_DIR, filename)
+  try {
+    // 确保目录存在
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true })
+    }
+    const data = await fs.promises.readFile(filePath, 'utf-8')
+    return JSON.parse(data)
+  } catch (error) {
+    console.error(`Error loading ${filename}:`, error)
+    // 返回空数组而不是 null，避免后续报错
+    return []
+  }
+})
+
+// 添加一个方法来检查文件是否存在
+ipcMain.handle('check-file-exists', async (_, filepath: string) => {
+  const fullPath = path.join(DATA_DIR, filepath)
+  return fs.existsSync(fullPath)
+})
+
 function createWindow() {
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
@@ -38,6 +70,7 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.mjs'),
       nodeIntegration: true,
       contextIsolation: false,
+      webSecurity: false,
     },
     width: 1200,
     height: 800,

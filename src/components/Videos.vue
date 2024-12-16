@@ -54,7 +54,7 @@
         <div class="relative">
             <video ref="videoRef" class="w-full aspect-video bg-gray-100" @timeupdate="handleTimeUpdate"
                 @ended="handleVideoEnd" @seeking="handleSeeking">
-                <source :src="currentVideoData?.url" type="video/mp4">
+                <source :src="videoUrl" type="video/mp4">
             </video>
 
             <!-- 播放/暂停遮罩层 -->
@@ -83,9 +83,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
-import { videos, type VideoState } from '../datas'
+import { dataManager, type VideoState } from '../datas'
 import { useStore } from '../store'
 import { useMessage } from 'naive-ui'
+import path from 'path'
 
 const emit = defineEmits(['next'])
 const message = useMessage()
@@ -95,10 +96,16 @@ const userName = inject('userName') as Ref<string>
 const videoRef = ref<HTMLVideoElement>()
 const currentVideo = ref(1)
 const lastPosition = ref(0)
+const dataPath = ref('')
+
+// 获取视频列表
+const videos = computed(() => {
+    return dataManager.getVideos()
+})
 
 // 获取当前视频数据
 const currentVideoData = computed(() => {
-    return videos.find(v => v.id === currentVideo.value)
+    return dataManager.getVideos().find(v => v.id === currentVideo.value)
 })
 
 // 获取视频状态
@@ -152,7 +159,7 @@ const allVideosCompleted = computed(() => {
     // 使用标记触发响应式更新
     stateUpdateFlag.value
     const states = getVideoStates()
-    return videos.every(video => states.get(video.id)?.completed)
+    return dataManager.getVideos().every(video => states.get(video.id)?.completed)
 })
 
 // 播放指定视频
@@ -270,7 +277,7 @@ const togglePlay = async () => {
 }
 
 // 监听视频播放状态
-onMounted(() => {
+onMounted(async () => {
     if (!videoRef.value) return
 
     videoRef.value.addEventListener('play', () => {
@@ -289,11 +296,26 @@ onMounted(() => {
 
     // 找到第一个未完成的视频
     const states = getVideoStates()
-    for (const video of videos) {
+    for (const video of dataManager.getVideos()) {
         if (!states.get(video.id)?.completed) {
             currentVideo.value = video.id
             break
         }
+    }
+
+    // 获取数据目录路径
+    dataPath.value = dataManager.getDataPath()
+
+    try {
+        // 检查视频文件是否存在
+        const videoPath = path.join('videos', currentVideoData.value?.url || '')
+        const exists = await window.ipcRenderer.invoke('check-file-exists', videoPath)
+        if (!exists) {
+            message.error('视频文件不存在，请检查视频文件是否正确放置')
+            return
+        }
+    } catch (error) {
+        message.error('数据加载失败')
     }
 })
 
@@ -330,6 +352,15 @@ const handleSpeedChange = (speed: number) => {
     playbackSpeed.value = speed
     videoRef.value.playbackRate = speed
 }
+
+// 修改视频 URL 计算
+const videoUrl = computed(() => {
+    if (!currentVideoData.value) return ''
+    // 使用 file:// 协议加载本地文件
+    const videoPath = path.join(dataPath.value, 'videos', currentVideoData.value.url)
+    console.log(videoPath)
+    return `file://${videoPath}`
+})
 </script>
 
 <style scoped>

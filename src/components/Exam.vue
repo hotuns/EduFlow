@@ -128,8 +128,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { questions, getRandomQuestions, QUESTION_SCORES } from '../datas'
+import { ref, computed, onMounted } from 'vue'
+import { dataManager, getRandomQuestions, QUESTION_SCORES } from '../datas'
 import { useStore } from '../store'
 import { useMessage } from 'naive-ui'
 import type { FormInst } from 'naive-ui'
@@ -144,7 +144,7 @@ const answers = ref<Record<string, string>>({})
 const submitting = ref(false)
 
 // 随机抽取考试题目
-const examQuestions = ref(getRandomQuestions(questions))
+const examQuestions = ref(getRandomQuestions(dataManager.getQuestions()))
 
 // 计算总分
 const totalScore = computed(() => {
@@ -285,6 +285,15 @@ const judgmentQuestions = computed(() =>
 const essayQuestions = computed(() =>
     examQuestions.value.filter(q => q.type === 'essay')
 )
+
+onMounted(async () => {
+    try {
+        await dataManager.init()
+        examQuestions.value = getRandomQuestions(dataManager.getQuestions())
+    } catch (error) {
+        message.error('题目加载失败')
+    }
+})
 </script>
 
 <style scoped>
