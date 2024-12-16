@@ -1,5 +1,5 @@
-import v_list from '../public/videos/vides.json'
-import q_list from '../public/exam/questions.json'
+import v_list from './vides.json'
+import q_list from './questions.json'
 
 // 添加视频状态类型定义
 export interface VideoState {
