@@ -128,7 +128,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { questions, getRandomQuestions, QUESTION_SCORES } from '../datas'
 import { useStore } from '../store'
 import { useMessage } from 'naive-ui'

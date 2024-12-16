@@ -1,3 +1,6 @@
+import v_list from '../public/videos/vides.json'
+import q_list from '../public/exam/questions.json'
+
 // 添加视频状态类型定义
 export interface VideoState {
     id: number
@@ -5,14 +8,8 @@ export interface VideoState {
     lastPosition: number
 }
 
-// 使用 fetch 动态加载配置文件
-const loadConfig = async (url: string) => {
-    const response = await fetch(url)
-    return response.json()
-}
-
 // 视频列表
-export const videos: { id: number; title: string; url: string }[] = await loadConfig('/videos/vides.json')
+export const videos = v_list as { id: number, title: string, url: string }[]
 
 // 定义题目类型
 export type QuestionType = 'choice' | 'judgment' | 'essay'
@@ -33,6 +30,10 @@ export interface Question {
     keywords?: string[]  // 阐述题的关键词
     score?: number      // 分值会在代码中设置
 }
+
+
+// 考试题目数据
+export const questions = q_list as Question[]
 
 // 定义题目分值
 export const QUESTION_SCORES = {
@@ -77,5 +78,3 @@ export const getRandomQuestions = (questions: Question[]): Question[] => {
     }))
 }
 
-// 考试题目数据
-export const questions: Question[] = await loadConfig('/exam/questions.json')
