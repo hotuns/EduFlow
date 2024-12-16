@@ -39,6 +39,15 @@ export const useStore = () => {
         return user
     }
 
+    const deleteUser = (userName: string) => {
+        const users = getUsers.value
+        const userIndex = users.findIndex(u => u.name === userName)
+        if (userIndex >= 0) {
+            users.splice(userIndex, 1)
+            store.set('users', users)
+        }
+    }
+
     const getVideoStates = (userName: string) => {
         const user = getUsers.value.find(u => u.name === userName)
         return user?.videoStates || []
@@ -66,6 +75,7 @@ export const useStore = () => {
     return {
         store,
         getUsers,
+        deleteUser,
         userLogin,
         getVideoStates,
         saveVideoStates,

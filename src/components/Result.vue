@@ -26,7 +26,7 @@
             </div>
 
             <!-- 学习情况 -->
-            <div class="mb-8">
+            <!-- <div class="mb-8">
                 <h3 class="text-lg font-bold mb-4">学习情况：</h3>
                 <div class="space-y-2">
                     <div v-for="video in videos" :key="video.id" class="flex items-center">
@@ -34,7 +34,7 @@
                         <div>{{ video.title }}</div>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
             <!-- 签章区域 -->
             <div class="text-right mt-12">
@@ -58,8 +58,8 @@
         </div>
 
         <!-- 重新开始确认对话框 -->
-        <n-modal v-model:show="showConfirm" preset="dialog" type="warning" title="提示" content="确定要重新开始吗？这将清除当前用户信息。"
-            positive-text="确定" negative-text="取消" @positive-click="confirmRestart"
+        <n-modal v-model:show="showConfirm" preset="dialog" type="warning" title="提示" content="重新开始之前，请先导出保存您的学习证明。"
+            positive-text="已经保存了" negative-text="还没保存" @positive-click="confirmRestart"
             @negative-click="showConfirm = false" />
     </div>
 </template>

@@ -3,17 +3,17 @@
         <!-- 左侧步骤条 -->
         <div class="w-300px h-full bg-white rounded-lg shadow-sm p-4">
             <n-steps vertical :current="current" :status="currentStatus">
-                <n-step title="输入姓名" :description="nameTips">
+                <n-step title="系统登陆" :description="nameTips">
                     <template #icon>
                         <div class="i-carbon-user-avatar text-lg" />
                     </template>
                 </n-step>
-                <n-step title="学习视频" description="观看完成所有视频">
+                <n-step title="学习培训" description="观看教材学习">
                     <template #icon>
                         <div class="i-carbon-video text-lg" />
                     </template>
                 </n-step>
-                <n-step title="通过考试" description="完成考试答题">
+                <n-step title="模拟考试" description="完成考试答题">
                     <template #icon>
                         <div class="i-carbon-exam-mode text-lg" />
                     </template>
@@ -31,7 +31,7 @@
             <n-card class="h-full" :bordered="false">
                 <!-- 登录页面 -->
                 <div v-if="current === 1" class="w-full h-full flex flex-col justify-center items-center space-y-6">
-                    <div class="text-2xl font-bold mb-8">欢迎开始学习</div>
+                    <div class="text-2xl font-bold mb-8">请输入您的姓名</div>
                     <div class="w-full max-w-sm space-y-4">
                         <n-input v-model:value="userName" placeholder="请输入您的姓名" size="large" round clearable
                             @keyup.enter="handleLogin" />
@@ -82,7 +82,7 @@ const handleNext = (step: number) => {
 
 // 处理登录
 const message = useMessage()
-const { userLogin, getUsers } = useStore()
+const { userLogin, deleteUser } = useStore()
 const handleLogin = () => {
     if (userName.value.trim().length < 2) {
         message.warning('请输入有效的姓名')
@@ -110,6 +110,9 @@ const handleRestart = () => {
     current.value = 1
     userName.value = ''
     currentStatus.value = 'process'
+
+    // 删除当前用户数据
+    // deleteUser(userName.value)
 }
 </script>
 

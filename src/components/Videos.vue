@@ -17,8 +17,8 @@
 
 
             <!-- 下一步按钮 -->
-            <n-button type="primary" :disabled="!allVideosCompleted" @click="handleNext">
-                完成学习
+            <n-button type="primary" @click="handleNext">
+                进行考试
             </n-button>
         </div>
 
@@ -72,6 +72,11 @@
                 {{ formatTime(currentTime) }} / {{ formatTime(duration) }}
             </div>
         </div>
+
+
+
+        <n-modal v-model:show="showModal" preset="dialog" title="提示" content="您还未学完全部视频，确定直接进行考试吗?" positive-text="确认"
+            negative-text="算了" @positive-click="submitCallback" @negative-click="cancelCallback" />
 
     </div>
 </template>
@@ -220,10 +225,17 @@ const handleVideoEnd = async () => {
     }
 }
 
+const showModal = ref(false)
+const submitCallback = () => {
+    emit('next')
+}
+const cancelCallback = () => {
+    showModal.value = false
+}
 // 完成学习
 const handleNext = () => {
     if (!allVideosCompleted.value) {
-        message.warning('请先完成所有视频的学习')
+        showModal.value = true
         return
     }
     emit('next')
@@ -255,20 +267,6 @@ const togglePlay = async () => {
     } catch (error) {
         message.error('视频播放失败，请重试')
     }
-}
-
-// 阻止进度条拖动
-const preventSeek = (e: Event) => {
-    e.preventDefault()
-    e.stopPropagation()
-    message.warning('请不要拖动进度条！')
-}
-
-// 处理控制栏点击
-const handleControlsClick = (e: Event) => {
-    e.preventDefault()
-    e.stopPropagation()
-    togglePlay()
 }
 
 // 监听视频播放状态
