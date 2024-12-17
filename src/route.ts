@@ -4,6 +4,7 @@ import { useUserStore } from "./store";
 const router = createRouter({
     history: createWebHashHistory(),
     routes: [
+        { name: 'index', path: '/', redirect: '/home' },
         { name: 'home', path: '/home', component: () => import('./views/Home.vue') },
         { name: 'learn', path: '/learn', component: () => import('./views/Learn.vue') },
         { name: 'exam', path: '/exam', component: () => import('./views/Exam.vue') },
@@ -21,6 +22,7 @@ router.beforeEach((to, from, next) => {
         next({ name: 'login' });
         return;
     }
+
 
 
     // 如果用户不是管理员且访问管理员页面，重定向到首页

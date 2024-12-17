@@ -118,7 +118,8 @@ const getQuestionType = (type: string) => {
     const typeMap = {
         'choice': '选择题',
         'judgment': '判断题',
-        'essay': '简答题'
+        'essay': '简答题',
+        'multiple': '多选题'
     }
     return typeMap[type as keyof typeof typeMap] || '未知类型'
 }

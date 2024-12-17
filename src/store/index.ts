@@ -46,7 +46,7 @@ export const useUserStore = defineStore('user', {
     state: (): StoreState => ({
         users: initAdmin(),
         currentUser: electronStore.get('currentUser') as User | null,
-        collapsed: electronStore.get('collapsed') as boolean
+        collapsed: electronStore.get('collapsed') as boolean || false
     }),
 
     getters: {
