@@ -1,14 +1,22 @@
-<script setup lang="ts">
-</script>
-
 <template>
-  <n-modal-provider>
-    <n-message-provider>
-      <div class="w-screen h-screen p-4">
-        <Home />
-      </div>
-    </n-message-provider>
-  </n-modal-provider>
+  <n-message-provider>
+    <n-modal-provider>
+      <Layout v-if="userStore.currentUser" />
+      <Login v-else />
+    </n-modal-provider>
+  </n-message-provider>
 </template>
 
-<style scoped></style>
+<script setup lang="ts">
+import Layout from './layout.vue';
+import { useUserStore } from './store';
+
+const userStore = useUserStore();
+</script>
+
+
+<style scoped>
+.n-layout-sider {
+  position: relative;
+}
+</style>

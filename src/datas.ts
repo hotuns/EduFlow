@@ -78,7 +78,9 @@ export const getRandomQuestions = (questions: Question[]): Question[] => {
 // 数据加载函数
 class DataManager {
     private videos: Video[] = []
-    private questions: Question[] = []
+    private choiceQuestions: Question[] = []
+    private judgmentQuestions: Question[] = []
+    private essayQuestions: Question[] = []
     private dataPath: string = ''
     private initialized = false
 
@@ -87,13 +89,35 @@ class DataManager {
 
         try {
             this.dataPath = await window.ipcRenderer.invoke('get-data-path')
+            console.log('Data path:', this.dataPath)
+
+            // 读取视频数据
             this.videos = await this.loadJson('videos.json')
-            this.questions = await this.loadJson('questions.json')
+
+            // 确保数据目录存在
+            const dataPath = await window.ipcRenderer.invoke('get-data-path')
+            console.log('Checking data files in:', dataPath)
+
+            // 读取各类型题目
+            const files = ['choice.xls', 'judgment.xls', 'essay.xls']
+            for (const file of files) {
+                const exists = await window.ipcRenderer.invoke('check-file-exists', file)
+                console.log(`File ${file} exists:`, exists)
+            }
+
+            const [choiceData, judgmentData, essayData] = await Promise.all([
+                this.loadExcel('choice.xls'),
+                this.loadExcel('judgment.xls'),
+                this.loadExcel('essay.xls')
+            ])
+
+            // 转换Excel数据为题目格式
+            this.choiceQuestions = this.transformChoiceQuestions(choiceData)
+            this.judgmentQuestions = this.transformJudgmentQuestions(judgmentData)
+            this.essayQuestions = this.transformEssayQuestions(essayData)
+
             this.initialized = true
             console.log('Data initialized successfully')
-            console.log('Data path:', this.dataPath)
-            console.log('Videos:', this.videos)
-            console.log('Questions:', this.questions)
         } catch (error) {
             console.error('Failed to initialize data:', error)
             throw error
@@ -104,12 +128,76 @@ class DataManager {
         return window.ipcRenderer.invoke('load-json', filename)
     }
 
+    private async loadExcel(filename: string, retries = 3): Promise<any[]> {
+        for (let i = 0; i < retries; i++) {
+            try {
+                const data = await window.ipcRenderer.invoke('load-excel', filename)
+                if (data && data.length > 0) {
+                    return data
+                }
+                console.warn(`Attempt ${i + 1}: File ${filename} loaded but empty`)
+            } catch (error) {
+                console.error(`Attempt ${i + 1} failed for ${filename}:`, error)
+                if (i === retries - 1) throw error
+                await new Promise(resolve => setTimeout(resolve, 1000)) // 等待1秒后重试
+            }
+        }
+        return []
+    }
+
+    // 转换选择题数据
+    private transformChoiceQuestions(data: any[]): Question[] {
+        return data.filter(item => item.title && item.optionA && item.optionB)  // 确保必要字段存在
+            .map((item, index) => ({
+                id: index + 1,
+                type: 'choice',
+                title: String(item.title).trim(),
+                options: [
+                    { label: 'A', value: String(item.optionA || '').trim() },
+                    { label: 'B', value: String(item.optionB || '').trim() },
+                    { label: 'C', value: String(item.optionC || '').trim() },
+                    { label: 'D', value: String(item.optionD || '').trim() }
+                ].filter(opt => opt.value), // 移除空选项
+                answer: String(item.answer || '').trim().toUpperCase()
+            }))
+    }
+
+    // 转换判断题数据
+    private transformJudgmentQuestions(data: any[]): Question[] {
+        return data.filter(item => item.title && item.answer)  // 确保必要字段存在
+            .map((item, index) => ({
+                id: index + 1,
+                type: 'judgment',
+                title: String(item.title).trim(),
+                answer: String(item.answer).trim().toLowerCase()
+            }))
+    }
+
+    // 转换简答题数据
+    private transformEssayQuestions(data: any[]): Question[] {
+        return data.filter(item => item.title)  // 确保必要字段存在
+            .map((item, index) => ({
+                id: index + 1,
+                type: 'essay',
+                title: String(item.title).trim(),
+                answer: String(item.answer || '').trim(),
+                keywords: String(item.keywords || '')
+                    .split(',')
+                    .map(k => k.trim())
+                    .filter(k => k)  // 移除空关键词
+            }))
+    }
+
     getVideos() {
         return this.videos
     }
 
     getQuestions() {
-        return this.questions
+        return [
+            ...this.choiceQuestions,
+            ...this.judgmentQuestions,
+            ...this.essayQuestions
+        ]
     }
 
     getDataPath() {

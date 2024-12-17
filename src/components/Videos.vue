@@ -14,12 +14,6 @@
                 </n-button>
             </div>
 
-
-
-            <!-- 下一步按钮 -->
-            <n-button type="primary" @click="handleNext">
-                进行考试
-            </n-button>
         </div>
 
 
@@ -53,7 +47,7 @@
         <!-- 视频播放器容器 -->
         <div class="relative">
             <video ref="videoRef" class="w-full aspect-video bg-gray-100" @timeupdate="handleTimeUpdate"
-                @ended="handleVideoEnd" @seeking="handleSeeking">
+                @ended="handleVideoEnd">
                 <source :src="videoUrl" type="video/mp4">
             </video>
 
@@ -75,8 +69,6 @@
 
 
 
-        <n-modal v-model:show="showModal" preset="dialog" title="提示" content="您还未学完全部视频，确定直接进行考试吗?" positive-text="确认"
-            negative-text="算了" @positive-click="submitCallback" @negative-click="cancelCallback" />
 
     </div>
 </template>
@@ -84,14 +76,15 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { dataManager, type VideoState } from '../datas'
-import { useStore } from '../store'
+import { useUserStore } from '../store'
 import { useMessage } from 'naive-ui'
 import path from 'path'
+import { storeToRefs } from 'pinia'
 
 const emit = defineEmits(['next'])
 const message = useMessage()
-const store = useStore()
-const userName = inject('userName') as Ref<string>
+const userStore = useUserStore()
+const { currentUser } = storeToRefs(userStore)
 
 const videoRef = ref<HTMLVideoElement>()
 const currentVideo = ref(1)
@@ -110,7 +103,7 @@ const currentVideoData = computed(() => {
 
 // 获取视频状态
 const getVideoStates = () => {
-    const states = store.getVideoStates(userName.value)
+    const states = userStore.getVideoStates(currentUser.value?.name || '')
     return new Map(states.map(state => [state.id, state]))
 }
 
@@ -131,7 +124,7 @@ const saveVideoState = (videoId: number, completed: boolean, position: number = 
         states.push(newState)
     }
 
-    store.saveVideoStates(userName.value, states)
+    userStore.saveVideoStates(currentUser.value?.name || '', states)
 }
 
 // 添加一个状态更新标记
@@ -207,14 +200,14 @@ const handleTimeUpdate = () => {
     }
 }
 
-// 视频拖动进度条处理
-const handleSeeking = () => {
-    if (!videoRef.value) return
-    if (videoRef.value.currentTime > lastPosition.value) {
-        videoRef.value.currentTime = lastPosition.value
-        message.warning('请不要拖动进度条！')
-    }
-}
+// // 视频拖动进度条处理
+// const handleSeeking = () => {
+//     if (!videoRef.value) return
+//     if (videoRef.value.currentTime > lastPosition.value) {
+//         videoRef.value.currentTime = lastPosition.value
+//         message.warning('请不要拖动进度条！')
+//     }
+// }
 
 // 视频播放完成处理
 const handleVideoEnd = async () => {
@@ -230,22 +223,6 @@ const handleVideoEnd = async () => {
     if (videoRef.value) {
         videoRef.value.pause()
     }
-}
-
-const showModal = ref(false)
-const submitCallback = () => {
-    emit('next')
-}
-const cancelCallback = () => {
-    showModal.value = false
-}
-// 完成学习
-const handleNext = () => {
-    if (!allVideosCompleted.value) {
-        showModal.value = true
-        return
-    }
-    emit('next')
 }
 
 // 添加新的状态

@@ -65,21 +65,19 @@
 </template>
 
 <script setup lang="ts">
-import { useStore } from '../store'
+import { useUserStore } from '../store'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
+import { storeToRefs } from 'pinia';
 
-const { getUsers } = useStore()
-const userName = inject('userName') as Ref<string>
+const userStore = useUserStore()
+const { getUsers } = userStore
+const { currentUser } = storeToRefs(userStore)
 const resultRef = ref<HTMLElement>()
 const exporting = ref(false)
 const message = useMessage()
 const emit = defineEmits(['restart'])
 const showConfirm = ref(false)
-
-const currentUser = computed(() => {
-    return getUsers.value.find((user: any) => user.name === userName.value)
-})
 
 // 格式化日期
 const formatDate = (timestamp?: number) => {
@@ -106,7 +104,7 @@ const exportAsPNG = async () => {
 
         // 创建下载链接
         const link = document.createElement('a')
-        link.download = `学习证明_${userName.value}_${new Date().getTime()}.png`
+        link.download = `学习证明_${currentUser.value?.name}_${new Date().getTime()}.png`
         link.href = canvas.toDataURL('image/png')
         link.click()
 
@@ -137,7 +135,7 @@ const exportAsPDF = async () => {
         })
 
         pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2)
-        pdf.save(`学习证明_${userName.value}_${new Date().getTime()}.pdf`)
+        pdf.save(`学习证明_${currentUser.value?.name}_${new Date().getTime()}.pdf`)
 
         message.success('导出成功')
     } catch (error) {
