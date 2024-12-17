@@ -38,10 +38,10 @@
             <div class="question-content mb-4">
                 <div class="mb-2">{{ currentQuestion.title }}</div>
 
-                <!-- 选择题选项 -->
-                <template v-if="currentQuestion.type === 'choice'">
+                <!-- 选项显示部分 -->
+                <template v-if="currentQuestion.type === 'choice' || currentQuestion.type === 'multiple'">
                     <div v-for="option in currentQuestion.options" :key="option.value" class="ml-4 mb-1">
-                        {{ option.label }}
+                        {{ option.label }}. {{ option.value }}
                     </div>
                 </template>
             </div>
@@ -57,6 +57,9 @@
                     <div class="font-bold mb-2">正确答案：</div>
                     <div v-if="currentQuestion.type === 'choice'" class="ml-4">
                         {{ getAnswerLabel(currentQuestion) }}
+                    </div>
+                    <div v-else-if="currentQuestion.type === 'multiple'" class="ml-4">
+                        {{ getMultipleAnswerLabels(currentQuestion) }}
                     </div>
                     <div v-else-if="currentQuestion.type === 'judgment'" class="ml-4">
                         {{ currentQuestion.answer === 'true' ? '正确' : '错误' }}
@@ -78,7 +81,8 @@ import type { Question, Option } from '../datas' // 导入类型定义
 // 题型选项
 const typeOptions = [
     { label: '全部题型', value: 'all' },
-    { label: '选择题', value: 'choice' },
+    { label: '单选题', value: 'choice' },
+    { label: '多选题', value: 'multiple' },
     { label: '判断题', value: 'judgment' },
     { label: '简答题', value: 'essay' }
 ]
@@ -128,6 +132,19 @@ const getAnswerLabel = (question: Question) => {
     if (!answerOption) return question.answer || '' // 如果找不到对应选项，直接返回答案
 
     return `${answerOption.label}. ${answerOption.value}`
+}
+
+// 获取多选题答案的选项文本
+const getMultipleAnswerLabels = (question: Question) => {
+    if (question.type !== 'multiple' || !question.options) return ''
+
+    const answers = question.answer?.split(',') || []
+    const answerLabels = answers.map(answer => {
+        const option = question.options?.find(opt => opt.label === answer.trim())
+        return option ? `${option.label}. ${option.value}` : answer
+    })
+
+    return answerLabels.join('、')
 }
 
 // 切换答案显示状态
