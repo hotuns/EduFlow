@@ -2,7 +2,7 @@
     <div class="w-full h-full flex flex-col space-y-4">
 
         <div class="w-full flex justify-between space-x-2">
-            <div class="flex  space-x-2">
+            <div class="flex w-full space-x-2 overflow-x-auto">
                 <n-button v-for="video in videos" :key="video.id" :type="video.id === currentVideo ? 'info' : 'default'"
                     :disabled="!canPlayVideo(video.id)" @click="playVideo(video.id)">
                     {{ video.title }}

@@ -76,29 +76,25 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { dataManager } from '../datas'
-import type { Question, Option } from '../datas' // 导入类型定义
+import type { Question, Option, QuestionType } from '../datas' // 导入类型定义
 
 // 题型选项
 const typeOptions = [
-    { label: '全部题型', value: 'all' },
     { label: '单选题', value: 'choice' },
     { label: '多选题', value: 'multiple' },
     { label: '判断题', value: 'judgment' },
     { label: '简答题', value: 'essay' }
 ]
 
-// 当前选中的题型
-const selectedType = ref('all')
+// 当前选中的题型，默认单选题
+const selectedType = ref<QuestionType>('choice')
 
-// 获取所有题目
-const questions = dataManager.getQuestions()
+// 获取题库
+const questionBank = dataManager.getQuestions()
 
-// 根据题型筛选题目
+// 根据题型获取题目
 const filteredQuestions = computed(() => {
-    if (selectedType.value === 'all') {
-        return questions
-    }
-    return questions.filter(q => q.type === selectedType.value)
+    return questionBank[selectedType.value]
 })
 
 const currentIndex = ref(0)

@@ -60,6 +60,11 @@ const menuOptions: MenuOption[] = [
         icon: renderIcon('i-carbon-exam-mode'),
     },
     {
+        label: () => h(RouterLink, { to: { name: 'user' } }, { default: () => '成绩证书' }),
+        key: 'user',
+        icon: renderIcon('i-carbon-certificate'),
+    },
+    {
         label: () => h(RouterLink, { to: { name: 'admin' } }, { default: () => '管理员' }),
         key: 'admin',
         icon: renderIcon('i-carbon-settings'),

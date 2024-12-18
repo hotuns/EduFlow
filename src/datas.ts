@@ -35,25 +35,29 @@ export interface Question {
 // 定义题目分值
 export const QUESTION_SCORES = {
     choice: 3,     // 单选题
-    multiple: 4,   // 多选题
-    judgment: 3,   // 判断题
+    multiple: 5,   // 多选题
+    judgment: 2,   // 判断题
     essay: 20      // 阐述题
 }
 
 // 定义抽题数量
 export const QUESTION_COUNTS = {
-    choice: 8,     // 个单选题
-    multiple: 4,   // 个多选题
-    judgment: 8,   // 个判断题
-    essay: 2       // 个阐述题
+    choice: 1,     // 个单选题
+    multiple: 1,   // 个多选题
+    judgment: 1,   // 个判断题
+    essay: 1       // 个阐述题
+}
+
+// 修改题库返回类型
+export interface QuestionBank {
+    choice: Question[]
+    multiple: Question[]
+    judgment: Question[]
+    essay: Question[]
 }
 
 // 从题库中随机抽取指定数量的题目
-export const getRandomQuestions = (questions: Question[]): Question[] => {
-    const choiceQuestions = questions.filter(q => q.type === 'choice')
-    const judgmentQuestions = questions.filter(q => q.type === 'judgment')
-    const essayQuestions = questions.filter(q => q.type === 'essay')
-
+export const getRandomQuestions = (questionBank: QuestionBank): Question[] => {
     // Fisher-Yates 洗牌算法
     const shuffle = (array: Question[]) => {
         for (let i = array.length - 1; i > 0; i--) {
@@ -65,9 +69,10 @@ export const getRandomQuestions = (questions: Question[]): Question[] => {
 
     // 随机抽取题目
     const selectedQuestions = [
-        ...shuffle(choiceQuestions).slice(0, QUESTION_COUNTS.choice),
-        ...shuffle(judgmentQuestions).slice(0, QUESTION_COUNTS.judgment),
-        ...shuffle(essayQuestions).slice(0, QUESTION_COUNTS.essay)
+        ...shuffle([...questionBank.choice]).slice(0, QUESTION_COUNTS.choice),
+        ...shuffle([...questionBank.multiple]).slice(0, QUESTION_COUNTS.multiple),
+        ...shuffle([...questionBank.judgment]).slice(0, QUESTION_COUNTS.judgment),
+        ...shuffle([...questionBank.essay]).slice(0, QUESTION_COUNTS.essay)
     ]
 
     // 设置分值
@@ -80,10 +85,12 @@ export const getRandomQuestions = (questions: Question[]): Question[] => {
 // 数据加载函数
 class DataManager {
     private videos: Video[] = []
-    private choiceQuestions: Question[] = []
-    private multipleQuestions: Question[] = []  // 新增多选题数组
-    private judgmentQuestions: Question[] = []
-    private essayQuestions: Question[] = []
+    private questionBank: QuestionBank = {
+        choice: [],
+        multiple: [],
+        judgment: [],
+        essay: []
+    }
     private dataPath: string = ''
     private initialized = false
 
@@ -110,19 +117,23 @@ class DataManager {
 
             const [choiceData, multipleData, judgmentData, essayData] = await Promise.all([
                 this.loadExcel('choice.xls'),
-                this.loadExcel('multiple.xls'),  // 新增多选题文件
+                this.loadExcel('multiple.xls'),
                 this.loadExcel('judgment.xls'),
                 this.loadExcel('essay.xls')
             ])
 
             // 转换Excel数据为题目格式
-            this.choiceQuestions = this.transformChoiceQuestions(choiceData)
-            this.multipleQuestions = this.transformMultipleQuestions(multipleData)
-            this.judgmentQuestions = this.transformJudgmentQuestions(judgmentData)
-            this.essayQuestions = this.transformEssayQuestions(essayData)
+            this.questionBank.choice = this.transformChoiceQuestions(choiceData)
+            this.questionBank.multiple = this.transformMultipleQuestions(multipleData)
+            this.questionBank.judgment = this.transformJudgmentQuestions(judgmentData)
+            this.questionBank.essay = this.transformEssayQuestions(essayData)
 
             this.initialized = true
             console.log('Data initialized successfully')
+            console.log('choiceQuestions', this.questionBank.choice)
+            console.log('multipleQuestions', this.questionBank.multiple)
+            console.log('judgmentQuestions', this.questionBank.judgment)
+            console.log('essayQuestions', this.questionBank.essay)
         } catch (error) {
             console.error('Failed to initialize data:', error)
             throw error
@@ -184,10 +195,10 @@ class DataManager {
             .map((item, index) => ({
                 id: index + 1,
                 type: 'essay',
-                title: String(item.title).trim(),
-                answer: String(item.answer || '').trim(),
+                title: String(item.title),
+                answer: String(item.answer || ''),
                 keywords: String(item.keywords || '')
-                    .split(',')
+                    .split(' ')
                     .map(k => k.trim())
                     .filter(k => k)  // 移除空关键词
             }))
@@ -224,13 +235,8 @@ class DataManager {
         return this.videos
     }
 
-    getQuestions() {
-        return [
-            ...this.choiceQuestions,
-            ...this.multipleQuestions,  // 添加多选题
-            ...this.judgmentQuestions,
-            ...this.essayQuestions
-        ]
+    getQuestions(): QuestionBank {
+        return this.questionBank
     }
 
     getDataPath() {

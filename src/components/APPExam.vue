@@ -18,11 +18,11 @@
                     </div>
                     <div v-for="(question, index) in choiceQuestions" :key="question.id" class="mb-8 relative">
                         <n-form-item :label="`${index + 1}. ${question.title}`" :path="`q${question.id}`">
-                            <n-radio-group v-model:value="answers[`q${question.id}`]">
+                            <n-radio-group v-model:value="answers[`q${question.id}`] as string">
                                 <n-space vertical>
                                     <n-radio v-for="option in question.options" :key="option.value"
-                                        :value="option.value">
-                                        {{ option.label }}
+                                        :value="option.label">
+                                        {{ option.label }}. {{ option.value }}
                                     </n-radio>
                                 </n-space>
                             </n-radio-group>
@@ -38,12 +38,32 @@
                     </div>
                     <div v-for="(question, index) in judgmentQuestions" :key="question.id" class="mb-8 relative">
                         <n-form-item :label="`${index + 1}. ${question.title}`" :path="`q${question.id}`">
-                            <n-radio-group v-model:value="answers[`q${question.id}`]">
+                            <n-radio-group v-model:value="answers[`q${question.id}`] as string">
                                 <n-space>
                                     <n-radio value="A">正确</n-radio>
                                     <n-radio value="B">错误</n-radio>
                                 </n-space>
                             </n-radio-group>
+                        </n-form-item>
+                    </div>
+                </div>
+
+                <!-- 多选题部分 -->
+                <div class="mb-8">
+                    <div class="text-lg font-bold mb-4 pb-2 border-b">
+                        多选题（每题{{ QUESTION_SCORES.multiple }}分，共{{ multipleQuestions.length * QUESTION_SCORES.multiple
+                        }}分）
+                    </div>
+                    <div v-for="(question, index) in multipleQuestions" :key="question.id" class="mb-8 relative">
+                        <n-form-item :label="`${index + 1}. ${question.title}`" :path="`q${question.id}`">
+                            <n-checkbox-group v-model:value="answers[`q${question.id}`] as string[]">
+                                <n-space vertical>
+                                    <n-checkbox v-for="option in question.options" :key="option.value"
+                                        :value="option.label">
+                                        {{ option.label }}. {{ option.value }}
+                                    </n-checkbox>
+                                </n-space>
+                            </n-checkbox-group>
                         </n-form-item>
                     </div>
                 </div>
@@ -55,8 +75,8 @@
                     </div>
                     <div v-for="(question, index) in essayQuestions" :key="question.id" class="mb-8 relative">
                         <n-form-item :label="`${index + 1}. ${question.title}`" :path="`q${question.id}`">
-                            <n-input v-model:value="answers[`q${question.id}`]" type="textarea" placeholder="请输入你的答案"
-                                :rows="4" />
+                            <n-input v-model:value="answers[`q${question.id}`] as string" type="textarea"
+                                placeholder="请输入你的答案" :rows="4" />
                         </n-form-item>
                     </div>
                 </div>
@@ -103,6 +123,16 @@
                         </div>
                     </div>
 
+                    <!-- 多选题得分 -->
+                    <div class="flex justify-between items-center">
+                        <div class="font-medium">多选题</div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xl font-bold">{{ scoreDetails.multiple }}</span>
+                            <span class="text-gray-500">/ {{ multipleQuestions.length * QUESTION_SCORES.multiple
+                                }}</span>
+                        </div>
+                    </div>
+
                     <!-- 阐述题得分 -->
                     <div class="flex justify-between items-center">
                         <div class="font-medium">阐述题</div>
@@ -141,7 +171,7 @@ const userStore = useUserStore()
 const { currentUser } = storeToRefs(userStore)
 
 const formRef = ref<FormInst | null>(null)
-const answers = ref<Record<string, string>>({})
+const answers = ref<Record<string, string | string[]>>({})
 const submitting = ref(false)
 
 // 随机抽取考试题目
@@ -153,50 +183,61 @@ const totalScore = computed(() => {
 })
 
 // 表单验证规则
-const rules = {
-    ...Object.fromEntries(
-        examQuestions.value.map(q => [
-            `q${q.id}`,
-            {
-                required: true,
-                message: '此题必答',
-                trigger: 'blur'
-            }
-        ])
-    )
-}
+const rules = computed(() => {
+    const baseRules = {
+        required: true,
+        message: '此题必答',
+        trigger: ['blur', 'change']
+    }
 
-// 计算阐述题得分
-const calculateEssayScore = (answer: string, keywords: string[]) => {
-    if (!answer) return 0
-    const matchedKeywords = keywords.filter(keyword =>
-        answer.toLowerCase().includes(keyword.toLowerCase())
-    )
-    return Math.floor((matchedKeywords.length / keywords.length) * QUESTION_SCORES.essay)
-}
-
-// 计算得分
-const calculateScore = () => {
-    let totalScore = 0
+    const formRules: any = {}
     examQuestions.value.forEach(question => {
-        const answer = answers.value[`q${question.id}`]
-        if (!answer) return
-
+        const key = `q${question.id}`
         switch (question.type) {
             case 'choice':
             case 'judgment':
-                if (answer === question.answer) {
-                    totalScore += question.score || 0
+                formRules[key] = {
+                    ...baseRules,
+                    type: 'string'
+                }
+                break
+            case 'multiple':
+                formRules[key] = {
+                    ...baseRules,
+                    type: 'array',
+                    min: 1,
+                    message: '请至少选择一个选项'
                 }
                 break
             case 'essay':
-                if (question.keywords) {
-                    totalScore += calculateEssayScore(answer, question.keywords)
+                formRules[key] = {
+                    ...baseRules,
+                    type: 'string',
+                    min: 1,
+                    message: '请输入答案'
                 }
                 break
         }
     })
-    return totalScore
+
+    return formRules
+})
+
+// 计算阐述题得分
+const calculateEssayScore = (answer: string, keywords: string[]) => {
+    if (!answer || !keywords.length) return 0
+
+    // 将答案转换为小写以进行不区分大小写的匹配
+    const lowerAnswer = answer.toLowerCase()
+
+    // 计算匹配的关键词数量
+    const matchedKeywords = keywords.filter(keyword =>
+        lowerAnswer.includes(keyword.toLowerCase())
+    )
+
+    // 按关键词匹配比例计算得分
+    const matchRatio = matchedKeywords.length / keywords.length
+    return Math.floor(matchRatio * QUESTION_SCORES.essay)
 }
 
 const showScoreModal = ref(false)
@@ -204,13 +245,15 @@ const examScore = ref(0)
 const scoreDetails = ref({
     choice: 0,
     judgment: 0,
+    multiple: 0,
     essay: 0
 })
 
-// 计算各题型得分
+// 计算各题型得分详情
 const calculateScoreDetails = () => {
     const details = {
         choice: 0,
+        multiple: 0,
         judgment: 0,
         essay: 0
     }
@@ -225,14 +268,25 @@ const calculateScoreDetails = () => {
                     details.choice += QUESTION_SCORES.choice
                 }
                 break
+
+            case 'multiple':
+                const userAnswers = (answer as string[]).sort().join(',')
+                const correctAnswers = question.answer?.split(',').sort().join(',')
+                if (userAnswers === correctAnswers) {
+                    details.multiple += QUESTION_SCORES.multiple
+                }
+                break
+
             case 'judgment':
-                if (answer === question.answer) {
+                const userJudgment = answer === 'A' ? 'true' : 'false'
+                if (userJudgment === question.answer?.toLowerCase()) {
                     details.judgment += QUESTION_SCORES.judgment
                 }
                 break
+
             case 'essay':
                 if (question.keywords) {
-                    details.essay += calculateEssayScore(answer, question.keywords)
+                    details.essay += calculateEssayScore(answer as string, question.keywords)
                 }
                 break
         }
@@ -268,9 +322,11 @@ const handleSubmit = () => {
     })
 }
 
+const router = useRouter()
 // 处理下一步
 const handleNext = () => {
     showScoreModal.value = false
+    router.push({ name: 'user' })
 }
 
 // 按题型分组的计算属性
@@ -280,6 +336,10 @@ const choiceQuestions = computed(() =>
 
 const judgmentQuestions = computed(() =>
     examQuestions.value.filter(q => q.type === 'judgment')
+)
+
+const multipleQuestions = computed(() =>
+    examQuestions.value.filter(q => q.type === 'multiple')
 )
 
 const essayQuestions = computed(() =>
