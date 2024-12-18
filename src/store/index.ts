@@ -21,6 +21,7 @@ interface StoreState {
     users: User[]
     currentUser: User | null
     collapsed: boolean
+    theme: 'light' | 'dark'
 }
 
 // 创建 electron-store 实例
@@ -46,7 +47,8 @@ export const useUserStore = defineStore('user', {
     state: (): StoreState => ({
         users: initAdmin(),
         currentUser: electronStore.get('currentUser') as User | null,
-        collapsed: electronStore.get('collapsed') as boolean || false
+        collapsed: electronStore.get('collapsed') as boolean || false,
+        theme: electronStore.get('theme') as 'light' | 'dark' || 'dark'
     }),
 
     getters: {
@@ -59,6 +61,10 @@ export const useUserStore = defineStore('user', {
     },
 
     actions: {
+        toggleTheme() {
+            this.theme = this.theme === 'light' ? 'dark' : 'light'
+        },
+
         userLogin(name: string, password: string) {
             if (name === 'admin') {
                 const adminUser = this.users.find(u => u.type === 'admin')

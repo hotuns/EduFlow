@@ -3,7 +3,7 @@
         <!-- 考试信息 -->
         <div class="flex justify-between items-center">
             <h2 class="text-xl font-bold">考试题目</h2>
-            <div class="text-gray-500">
+            <div class="text-gray-400">
                 总分：{{ totalScore }} 分
             </div>
         </div>
@@ -323,7 +323,6 @@ const handleSubmit = () => {
 }
 
 const router = useRouter()
-// 处理下一步
 const handleNext = () => {
     showScoreModal.value = false
     router.push({ name: 'user' })
@@ -358,10 +357,14 @@ onMounted(async () => {
 
 <style scoped>
 .border-b {
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #374151;
+}
+
+:root {
+    --primary-color: #42d583;
 }
 
 .text-primary {
-    color: #18a058;
+    color: var(--primary-color);
 }
 </style>

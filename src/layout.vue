@@ -1,13 +1,17 @@
 <template>
     <n-layout has-sider class="h-screen">
-        <n-layout-sider bordered collapse-mode="width" :collapsed-width="64" :width="240" :collapsed="collapsed"
+        <n-layout-sider bordered collapse-mode="width" :collapsed-width="50" :width="180" :collapsed="collapsed"
             show-trigger @collapse="collapsed = true" @expand="collapsed = false">
+
             <n-menu :options="menuOptions" :value="defaultSelectedKey" />
 
             <!-- 用户信息和退出按钮 -->
             <div v-if="currentUser" class="absolute bottom-0 left-0 right-0 p-4 border-t bg-white dark:bg-black">
                 <div class="flex items-center justify-between">
                     <span class="text-sm" v-show="!collapsed">{{ currentUser.name }}</span>
+
+                    <!-- <div class="i-carbon-sun dark:i-carbon-moon" @click="userStore.toggleTheme"></div> -->
+
                     <n-button text type="error" @click="handleLogout">
                         退出
                     </n-button>
@@ -36,7 +40,7 @@ const defaultSelectedKey = computed(() => {
     return route.name as string
 })
 
-const { collapsed, currentUser } = storeToRefs(userStore);
+const { collapsed, currentUser, theme } = storeToRefs(userStore);
 
 // 渲染图标
 function renderIcon(icon: string) {

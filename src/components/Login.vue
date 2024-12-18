@@ -1,31 +1,50 @@
 <template>
-    <div class="w-screen h-screen p-4 flex justify-center items-center bg-gray-100">
-        <n-card class="w-400px">
-            <div class="text-center mb-8">
-                <h1 class="text-2xl font-bold">系统登录</h1>
-            </div>
+    <div class="login-container w-screen h-screen flex justify-center items-center"
+        :style="{ backgroundImage: `url(${bgGif})` }">
+        <!-- 背景遮罩 -->
+        <div class="overlay absolute inset-0"></div>
 
-            <n-form ref="formRef" :model="formValue" :rules="rules">
-                <n-form-item path="username" label="用户名">
-                    <n-input v-model:value="formValue.username" placeholder="管理员: admin / 学员: 姓名" />
-                </n-form-item>
+        <!-- 登录卡片 -->
+        <div class="card-wrapper">
+            <n-card class="login-card dark:bg-gray-800/80 backdrop-blur">
+                <div class="text-center mb-8">
+                    <h1 class="text-2xl font-bold dark:text-gray-100">系统登录</h1>
+                </div>
 
-                <n-form-item path="password" label="密码">
-                    <n-input v-model:value="formValue.password" type="password" placeholder="请输入密码"
-                        show-password-on="click" />
-                </n-form-item>
-            </n-form>
+                <n-form ref="formRef" :model="formValue" :rules="rules">
+                    <n-form-item path="username" label="用户名">
+                        <n-input v-model:value="formValue.username" placeholder="管理员: admin / 学员: 姓名"
+                            class="dark:bg-gray-700/50">
+                            <template #prefix>
+                                <div class="i-carbon-user text-lg"></div>
+                            </template>
+                        </n-input>
+                    </n-form-item>
 
-            <div class="flex justify-center mt-8">
-                <n-button type="primary" size="large" :loading="loading" @click="handleLogin" block>
-                    登录
-                </n-button>
-            </div>
+                    <n-form-item path="password" label="密码">
+                        <n-input v-model:value="formValue.password" type="password" placeholder="请输入密码"
+                            show-password-on="click" class="dark:bg-gray-700/50">
+                            <template #prefix>
+                                <div class="i-carbon-password text-lg"></div>
+                            </template>
+                        </n-input>
+                    </n-form-item>
+                </n-form>
 
-            <div class="mt-4 text-gray-400 text-sm text-center">
-                首次登录的学员将自动创建账号，默认密码：123456
-            </div>
-        </n-card>
+                <div class="flex justify-center mt-8">
+                    <n-button type="primary" size="large" :loading="loading" @click="handleLogin" block>
+                        <template #icon>
+                            <div class="i-carbon-login"></div>
+                        </template>
+                        登录
+                    </n-button>
+                </div>
+
+                <div class="mt-4 text-gray-400 text-sm text-center">
+                    首次登录的学员将自动创建账号，默认密码：123456
+                </div>
+            </n-card>
+        </div>
     </div>
 </template>
 
@@ -33,6 +52,7 @@
 import { useUserStore } from '../store'
 import { useRouter } from 'vue-router'
 import type { FormInst } from 'naive-ui'
+import bgGif from '../assets/ZY500.gif?url'
 
 const router = useRouter()
 const message = useMessage()
@@ -50,12 +70,12 @@ const rules = {
     username: {
         required: true,
         message: '请输入用户名',
-        trigger: 'blur'
+        trigger: ['blur', 'input']
     },
     password: {
         required: true,
         message: '请输入密码',
-        trigger: 'blur'
+        trigger: ['blur', 'input']
     }
 }
 
@@ -87,25 +107,15 @@ const handleLogin = () => {
 </script>
 
 <style scoped>
-:deep(.n-card-header) {
-    padding: 16px 24px;
+.login-container {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
 }
 
-:deep(.n-card__content) {
-    padding: 24px;
-}
-
-/* 步骤条图标样式 */
-:deep(.n-step-indicator) {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* 卡片阴影效果 */
-:deep(.n-card) {
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03),
-        0 1px 6px -1px rgba(0, 0, 0, 0.02),
-        0 2px 4px 0 rgba(0, 0, 0, 0.02);
+.overlay {
+    background: rgba(17, 24, 39, 0.85);
+    backdrop-filter: blur(4px);
 }
 </style>
