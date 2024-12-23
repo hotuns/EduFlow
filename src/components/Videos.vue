@@ -1,76 +1,80 @@
 <template>
     <div class="w-full h-full flex flex-col space-y-4">
-
-        <div class="w-full flex justify-between space-x-2">
-            <n-space>
-                <n-button v-for="video in videos" :key="video.id"
-                    :type="video.id === currentVideo ? 'info' : 'tertiary'" :disabled="!canPlayVideo(video.id)"
-                    @click="playVideo(video.id)">
-                    {{ video.title }}
-                    <template #icon>
-                        <div v-if="isVideoCompleted(video.id)" class="text-green-500">
-                            ✓
-                        </div>
-                    </template>
-                </n-button>
-            </n-space>
-
+        <!-- 视频列表 -->
+        <div class="w-full">
+            <n-tabs type="line" animated>
+                <n-tab-pane v-for="group in videoGroups" :key="group.group" :name="group.group" :tab="group.group">
+                    <div class="flex flex-wrap gap-2">
+                        <n-button v-for="video in group.videos" :key="video.id"
+                            :type="video.id === currentVideo ? 'primary' : 'default'"
+                            :disabled="!canPlayVideo(video.id)" :class="{ 'opacity-60': !canPlayVideo(video.id) }"
+                            @click="playVideo(video.id)">
+                            <template #icon>
+                                <div v-if="isVideoCompleted(video.id)"
+                                    class="i-carbon-checkmark-filled text-emerald-400">
+                                </div>
+                                <div v-else class="i-carbon-video"></div>
+                            </template>
+                            {{ video.title }}
+                        </n-button>
+                    </div>
+                </n-tab-pane>
+            </n-tabs>
         </div>
-
 
         <n-divider />
 
+        <!-- 视频播放区域 -->
+        <div class="flex-1 flex flex-col space-y-4">
+            <!-- 视频标题 -->
+            <div class="text-lg font-bold dark:text-gray-200">
+                {{ currentVideoData?.title }}
+            </div>
 
-        <!-- 视频标题 -->
-        <div class="text-lg font-bold">
-            {{ currentVideoData?.title }}
-        </div>
+            <!-- 视频播放器容器 -->
+            <div class="relative flex-1">
+                <video ref="videoRef" class="w-full h-full bg-gray-800 rounded-lg" @timeupdate="handleTimeUpdate"
+                    @ended="handleVideoEnd">
+                    <source :src="videoUrl" type="video/mp4">
+                </video>
 
-        <!-- 播放控制按钮 -->
-        <div class="flex justify-center items-center space-x-4">
-            <n-button @click="togglePlay">
-                {{ isPlaying ? '暂停' : '播放' }}
-            </n-button>
-
-            <!-- 添加倍速控制 -->
-            <n-dropdown :options="speedOptions" @select="handleSpeedChange" trigger="click">
-                <n-button size="small">
-                    {{ playbackSpeed }}x
-                </n-button>
-            </n-dropdown>
-
-            <!-- 进度条 -->
-            <n-progress type="line" :percentage="percentage" :height="14" :border-radius="4"
-                indicator-placement="inside" :show-indicator="true" processing />
-        </div>
-
-
-        <!-- 视频播放器容器 -->
-        <div class="relative">
-            <video ref="videoRef" class="w-full aspect-video bg-gray-100" @timeupdate="handleTimeUpdate"
-                @ended="handleVideoEnd">
-                <source :src="videoUrl" type="video/mp4">
-            </video>
-
-            <!-- 播放/暂停遮罩层 -->
-            <div class="absolute inset-0 bg-transparent cursor-pointer" @click="togglePlay">
-                <!-- 播放/暂停图标 -->
-                <div v-show="!isPlaying" class="absolute inset-0 flex items-center justify-center">
-                    <div class="p-4 rounded-full bg-black/30 text-white">
-                        <div class="i-carbon-play-filled text-3xl"></div>
+                <!-- 播放/暂停遮罩层 -->
+                <div class="absolute inset-0 bg-transparent cursor-pointer" @click="togglePlay">
+                    <!-- 播放/暂停图标 -->
+                    <div v-show="!isPlaying" class="absolute inset-0 flex items-center justify-center">
+                        <div class="p-4 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors">
+                            <div class="i-carbon-play-filled text-3xl"></div>
+                        </div>
                     </div>
+                </div>
+
+                <!-- 播放时间提示 -->
+                <div class="absolute bottom-2 right-2 px-2 py-1 text-sm text-white bg-black/50 rounded">
+                    {{ formatTime(currentTime) }} / {{ formatTime(duration) }}
                 </div>
             </div>
 
-            <!-- 播放时间提示 -->
-            <div class="absolute bottom-2 right-2 px-2 py-1 text-sm text-white bg-black/50 rounded">
-                {{ formatTime(currentTime) }} / {{ formatTime(duration) }}
+            <!-- 播放控制区域 -->
+            <div class="flex items-center space-x-4 p-2">
+                <n-button @click="togglePlay" :type="isPlaying ? 'warning' : 'primary'">
+                    <template #icon>
+                        <div :class="isPlaying ? 'i-carbon-pause' : 'i-carbon-play'"></div>
+                    </template>
+                    {{ isPlaying ? '暂停' : '播放' }}
+                </n-button>
+
+                <n-dropdown :options="speedOptions" @select="handleSpeedChange" trigger="click">
+                    <n-button size="small">
+                        {{ playbackSpeed }}x
+                    </n-button>
+                </n-dropdown>
+
+                <div class="flex-1">
+                    <n-progress type="line" :percentage="percentage" :height="14" :border-radius="4"
+                        indicator-placement="inside" :show-indicator="true" processing />
+                </div>
             </div>
         </div>
-
-
-
-
     </div>
 </template>
 
@@ -92,14 +96,12 @@ const currentVideo = ref(1)
 const lastPosition = ref(0)
 const dataPath = ref('')
 
-// 获取视频列表
-const videos = computed(() => {
-    return dataManager.getVideos()
-})
+// 获取视频分组
+const videoGroups = computed(() => dataManager.getVideoGroups())
 
 // 获取当前视频数据
 const currentVideoData = computed(() => {
-    return dataManager.getVideos().find(v => v.id === currentVideo.value)
+    return dataManager.getVideoById(currentVideo.value)
 })
 
 // 获取视频状态
@@ -379,5 +381,30 @@ video::-webkit-media-controls-enclosure {
 
 .bg-black\/30:hover {
     background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* 添加新样式 */
+:deep(.n-tabs-nav) {
+    @apply mb-4;
+}
+
+:deep(.n-button) {
+    @apply dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700;
+}
+
+:deep(.n-button--primary-type) {
+    @apply dark:bg-emerald-600 dark:border-emerald-600 dark:text-white;
+}
+
+:deep(.n-button:not(:disabled):hover) {
+    @apply dark:bg-gray-700;
+}
+
+:deep(.n-button--primary-type:not(:disabled):hover) {
+    @apply dark:bg-emerald-500;
+}
+
+.opacity-60 {
+    opacity: 0.6;
 }
 </style>
