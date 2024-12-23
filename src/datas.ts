@@ -82,9 +82,15 @@ export const getRandomQuestions = (questionBank: QuestionBank): Question[] => {
     }))
 }
 
-// 数据加载函数
+// 视频组接口
+export interface VideoGroup {
+    group: string
+    videos: Video[]
+}
+
+// 修改 DataManager 类
 class DataManager {
-    private videos: Video[] = []
+    private videos: VideoGroup[] = []
     private questionBank: QuestionBank = {
         choice: [],
         multiple: [],
@@ -231,8 +237,25 @@ class DataManager {
             })
     }
 
-    getVideos() {
+    // 获取所有视频（扁平化）
+    getVideos(): Video[] {
+        return this.videos.reduce((allVideos, group) => {
+            return [...allVideos, ...group.videos]
+        }, [] as Video[])
+    }
+
+    // 获取视频组
+    getVideoGroups(): VideoGroup[] {
         return this.videos
+    }
+
+    // 根据ID获取视频
+    getVideoById(id: number): Video | undefined {
+        for (const group of this.videos) {
+            const video = group.videos.find(v => v.id === id)
+            if (video) return video
+        }
+        return undefined
     }
 
     getQuestions(): QuestionBank {

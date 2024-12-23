@@ -95,25 +95,18 @@ const hasExamScore = computed(() => {
 // 计算视频学习进度
 const videoProgress = computed(() => {
     const videoStates = currentUser.value?.videoStates
-
     if (!videoStates?.length) return 0
+
+    // 获取所有视频总数（扁平化后）
+    const totalVideos = dataManager.getVideos().length
 
     // 计算已完成的视频数量
     const completed = videoStates.reduce((count, state) => {
-        // 视频播放完成
-        if (state.completed) {
-            return count + 1
-        }
-        return count
+        return state.completed ? count + 1 : count
     }, 0)
 
     // 计算百分比
-    const total = dataManager.getVideos().length
-    const percentage = Math.floor((completed / total) * 100)
-
-    console.log(percentage)
-
-    return Math.min(percentage, 100) // 确保不超过100%
+    return Math.min(Math.floor((completed / totalVideos) * 100), 100)
 })
 
 // 跳转到学习页面
