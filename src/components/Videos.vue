@@ -69,9 +69,15 @@
                     </n-button>
                 </n-dropdown>
 
+                <!-- 修改进度条，添加可拖动功能 -->
                 <div class="flex-1">
-                    <n-progress type="line" :percentage="percentage" :height="14" :border-radius="4"
-                        indicator-placement="inside" :show-indicator="true" processing />
+                    <n-slider v-if="duration > 0" :value="currentTime" :max="duration" :step="1" :tooltip="false"
+                        :disabled="!isVideoCompleted(currentVideo)" @update:value="handleTimeChange" />
+                </div>
+
+                <!-- 时间显示 -->
+                <div class="text-sm dark:text-gray-300 whitespace-nowrap">
+                    {{ formatTime(currentTime) }} / {{ formatTime(duration) }}
                 </div>
             </div>
         </div>
@@ -188,29 +194,37 @@ const playVideo = (videoId: number) => {
     })
 }
 
+// 处理时间变化
+const handleTimeChange = (time: number) => {
+    if (!videoRef.value) return
+
+    // 如果视频已完成，允许自由拖动
+    if (isVideoCompleted(currentVideo.value)) {
+        videoRef.value.currentTime = time
+        return
+    }
+
+    // 如果视频未完成，限制只能拖到已播放位置
+    if (time > lastPosition.value) {
+        videoRef.value.currentTime = lastPosition.value
+        message.warning('首次观看时不能拖动到未播放的位置')
+    } else {
+        videoRef.value.currentTime = time
+    }
+}
+
 // 视频进度更新处理
 const handleTimeUpdate = () => {
     if (!videoRef.value) return
     currentTime.value = videoRef.value.currentTime
-    duration.value = videoRef.value.duration || videoRef.value.duration
+    duration.value = videoRef.value.duration
 
     // 只有未完成的视频才更新 lastPosition
-    const states = getVideoStates()
-    const currentState = states.get(currentVideo.value)
-    if (!currentState?.completed) {
-        lastPosition.value = currentTime.value
-        saveVideoState(currentVideo.value, false, currentTime.value)
+    if (!isVideoCompleted(currentVideo.value)) {
+        lastPosition.value = Math.max(lastPosition.value, currentTime.value)
+        saveVideoState(currentVideo.value, false, lastPosition.value)
     }
 }
-
-// // 视频拖动进度条处理
-// const handleSeeking = () => {
-//     if (!videoRef.value) return
-//     if (videoRef.value.currentTime > lastPosition.value) {
-//         videoRef.value.currentTime = lastPosition.value
-//         message.warning('请不要拖动进度条！')
-//     }
-// }
 
 // 视频播放完成处理
 const handleVideoEnd = async () => {
@@ -406,5 +420,22 @@ video::-webkit-media-controls-enclosure {
 
 .opacity-60 {
     opacity: 0.6;
+}
+
+/* 进度条样式 */
+:deep(.n-slider) {
+    @apply dark:bg-gray-700;
+}
+
+:deep(.n-slider-rail__fill) {
+    @apply bg-emerald-500;
+}
+
+:deep(.n-slider-handle) {
+    @apply dark:bg-emerald-500 dark:border-emerald-500;
+}
+
+:deep(.n-slider-handle:hover) {
+    @apply dark:bg-emerald-400 dark:border-emerald-400;
 }
 </style>
