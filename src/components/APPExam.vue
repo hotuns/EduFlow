@@ -200,7 +200,7 @@
                                                 {{ index + 1 }}. {{ question.title }}
                                             </div>
                                             <div class="text-sm dark:text-gray-400">
-                                                您的答案：{{ answers.judgment[`q${question.id}`] === 'A' ? '正确' : '错误' }}
+                                                您的答案：{{ answers.judgment[`q${question.id}`] === 'true' ? '正确' : '错误' }}
                                             </div>
                                             <div class="text-sm"
                                                 :class="isAnswerCorrect('judgment', question) ? 'text-green-500' : 'text-red-500'">
@@ -418,6 +418,8 @@ const calculateScoreDetails = () => {
         const answer = type_answer[`q${question.id}`]
         if (answer === undefined) return
 
+        console.log(question.type, answer, question.answer)
+
         switch (question.type) {
             case 'choice':
                 if (answer === question.answer) {
@@ -468,7 +470,7 @@ const calculateScoreDetails = () => {
     return details
 }
 
-// 修改提交处理
+// 提交处理
 const handleSubmit = async () => {
     try {
         const validations = await Promise.all([
