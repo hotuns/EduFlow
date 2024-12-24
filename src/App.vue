@@ -1,12 +1,13 @@
 <template>
   <n-config-provider :theme="theme">
-
-    <n-message-provider>
-      <n-modal-provider>
-        <Layout v-if="userStore.currentUser" />
-        <Login v-else />
-      </n-modal-provider>
-    </n-message-provider>
+    <n-dialog-provider>
+      <n-message-provider>
+        <n-modal-provider>
+          <Layout v-if="userStore.currentUser" />
+          <Login v-else />
+        </n-modal-provider>
+      </n-message-provider>
+    </n-dialog-provider>
   </n-config-provider>
 </template>
 

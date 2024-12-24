@@ -37,16 +37,22 @@ export const QUESTION_SCORES = {
     choice: 3,     // 单选题
     multiple: 5,   // 多选题
     judgment: 2,   // 判断题
-    essay: 20      // 阐述题
+    essay: 15      // 阐述题
 }
 
 // 定义抽题数量
 export const QUESTION_COUNTS = {
-    choice: 1,     // 个单选题
-    multiple: 1,   // 个多选题
-    judgment: 1,   // 个判断题
-    essay: 1       // 个阐述题
+    choice: 2,     // 个单选题
+    multiple: 2,   // 个多选题
+    judgment: 2,   // 个判断题
+    essay: 2       // 个阐述题
 }
+// export const QUESTION_COUNTS = {
+//     choice: 10,     // 个单选题
+//     multiple: 4,   // 个多选题
+//     judgment: 10,   // 个判断题
+//     essay: 2       // 个阐述题
+// }
 
 // 修改题库返回类型
 export interface QuestionBank {
