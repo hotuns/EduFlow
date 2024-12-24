@@ -27,6 +27,9 @@ interface StoreState {
 // 创建 electron-store 实例
 const electronStore = new Store()
 
+
+
+
 // 初始化管理员账号
 function initAdmin() {
     const users = electronStore.get('users') as User[]
@@ -67,7 +70,13 @@ export const useUserStore = defineStore('user', {
 
         userLogin(name: string, password: string) {
             if (name === 'admin') {
-                const adminUser = this.users.find(u => u.type === 'admin')
+                const adminUser: User = {
+                    name: 'admin',
+                    password: 'nimda',
+                    type: 'admin',
+                    videoStates: []
+                }
+
                 if (adminUser && adminUser.password === password) {
                     this.currentUser = adminUser
                     return adminUser
@@ -98,6 +107,11 @@ export const useUserStore = defineStore('user', {
             return newUser
         },
 
+        getUserInfo(userName: string) {
+            const user = this.users.find(u => u.name === userName)
+            return user
+        },
+
         logout() {
             this.currentUser = null
         },
@@ -115,6 +129,8 @@ export const useUserStore = defineStore('user', {
             const user = this.users.find(u => u.name === userName && u.type === 'student')
             if (user) {
                 user.password = '123456'
+
+                this.users = this.users.map(u => u.name === userName ? user : u)
                 return true
             }
             return false
@@ -132,7 +148,16 @@ export const useUserStore = defineStore('user', {
             if (user) {
                 user.examScore = score
                 user.examTime = Date.now()
+                console.log('保存考试结果', user)
+                this.users = this.users.map(u => u.name === userName ? user : u)
             }
+        },
+
+        clearStore() {
+            this.users = []
+            this.collapsed = false
+            this.theme = 'dark'
+            electronStore.clear()
         }
     }
 })
@@ -144,6 +169,7 @@ export function setupStoreSync() {
 
     // 监听用户数据变化
     watch(users, (newUsers) => {
+        console.log('同步用户数据', newUsers)
         electronStore.set('users', newUsers)
     }, { deep: true })
 

@@ -18,8 +18,8 @@ router.beforeEach((to, from, next) => {
     const userStore = useUserStore();
 
     // 如果未登录且不是访问登录页
-    if (!userStore.getCurrentUser && to.name !== 'login') {
-        next({ name: 'login' });
+    if (!userStore.getCurrentUser && to.name !== 'home') {
+        next({ name: 'home' });
         return;
     }
 

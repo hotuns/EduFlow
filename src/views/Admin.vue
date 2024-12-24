@@ -6,6 +6,9 @@
                     <n-button @click="refreshData">
                         刷新数据
                     </n-button>
+                    <n-button @click="clearStore">
+                        清空数据
+                    </n-button>
                 </n-space>
             </template>
 
@@ -116,6 +119,23 @@ const handleDeleteUser = (userName: string) => {
     userStore.deleteUser(userName)
     message.success('用户已删除')
 }
+
+const dialog = useDialog()
+
+// 清空数据
+const clearStore = () => {
+    dialog.warning({
+        title: '清空数据',
+        content: '确定要清空数据吗？',
+        positiveText: '清空',
+        negativeText: '取消',
+        onPositiveClick: () => {
+            userStore.clearStore()
+            message.success('数据已清空')
+        }
+    })
+}
+
 </script>
 
 <style scoped>

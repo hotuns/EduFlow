@@ -21,7 +21,7 @@
                 <!-- 水印背景 -->
                 <div class="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
                     <div class="transform rotate-30 text-9xl font-bold dark:text-gray-700">
-                        {{ currentUser?.name }} {{ certificateNo }}
+                        {{ userInfo?.name }} {{ certificateNo }}
                     </div>
                 </div>
 
@@ -34,7 +34,7 @@
                 <!-- 用户信息 -->
                 <div class="mb-8 leading-loose">
                     <div class="text-lg mb-4 dark:text-gray-300">
-                        尊敬的 <span class="font-bold text-xl text-emerald-400">{{ currentUser?.name }}</span> 同学：
+                        尊敬的 <span class="font-bold text-xl text-emerald-400">{{ userInfo?.name }}</span> 同学：
                     </div>
                     <div class="dark:text-gray-400">
                         恭喜您完成了全部课程学习并通过考试。现特发此证书，以资鼓励！
@@ -45,14 +45,14 @@
                 <div class="flex flex-col justify-center items-center mb-12 dark:bg-gray-700/30 rounded-lg p-6">
                     <div class="text-center">
                         <div class="text-7xl font-bold text-emerald-400 mb-2">
-                            {{ currentUser?.examScore }}
+                            {{ userInfo?.examScore }}
                         </div>
                         <div class="dark:text-gray-400">总分</div>
                     </div>
                     <n-divider class="dark:bg-gray-600" />
                     <div class="text-center">
                         <div class="text-4xl font-bold text-emerald-400 mb-2">
-                            {{ formatDate(currentUser?.examTime) }}
+                            {{ formatDate(userInfo?.examTime) }}
                         </div>
                         <div class="dark:text-gray-400">考试时间</div>
                     </div>
@@ -99,6 +99,9 @@ import { dataManager } from '../datas'
 
 const userStore = useUserStore()
 const { currentUser } = storeToRefs(userStore)
+const userInfo = computed(() => userStore.getUserInfo(currentUser.value?.name || ''))
+
+
 const resultRef = ref<HTMLElement>()
 const exporting = ref(false)
 const message = useMessage()
@@ -110,7 +113,7 @@ const videos = computed(() => dataManager.getVideos())
 
 // 生成证书编号
 const certificateNo = computed(() => {
-    const timestamp = currentUser.value?.examTime || Date.now()
+    const timestamp = userInfo.value?.examTime || Date.now()
     const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
     return `CERT-${timestamp.toString(36)}-${random}`
 })
@@ -139,7 +142,7 @@ const exportAsPNG = async () => {
 
         // 创建下载链接
         const link = document.createElement('a')
-        link.download = `学习证明_${currentUser.value?.name}_${new Date().getTime()}.png`
+        link.download = `学习证明_${userInfo.value?.name}_${new Date().getTime()}.png`
         link.href = canvas.toDataURL('image/png')
         link.click()
 
@@ -170,7 +173,7 @@ const exportAsPDF = async () => {
         })
 
         pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2)
-        pdf.save(`学习证明_${currentUser.value?.name}_${new Date().getTime()}.pdf`)
+        pdf.save(`学习证明_${userInfo.value?.name}_${new Date().getTime()}.pdf`)
 
         message.success('导出成功')
     } catch (error) {
