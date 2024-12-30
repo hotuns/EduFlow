@@ -28,7 +28,8 @@
         <div class="flex-1 flex flex-col space-y-4">
             <!-- 视频标题 -->
             <div class="text-lg font-bold dark:text-gray-200">
-                {{ currentVideoData?.title }}
+                <!-- {{ currentVideoData?.title }} -->
+                  {{ videoUrl }}
             </div>
 
             <!-- 视频播放器容器 -->
@@ -179,6 +180,9 @@ const playVideo = (videoId: number) => {
     duration.value = 0
     lastPosition.value = 0
 
+    // 更新视频 URL
+    videoUrl.value // 确保 videoUrl 被计算
+
     nextTick(() => {
         if (videoRef.value) {
             // 如果视频未完成，从上次位置继续播放
@@ -190,6 +194,7 @@ const playVideo = (videoId: number) => {
             }
             // 设置倍速
             videoRef.value.playbackRate = playbackSpeed.value
+            videoRef.value.load()
         }
     })
 }
@@ -352,7 +357,6 @@ const videoUrl = computed(() => {
     if (!currentVideoData.value) return ''
     // 使用 file:// 协议加载本地文件
     const videoPath = path.join(dataPath.value, 'videos', currentVideoData.value.url)
-    console.log(videoPath)
     return `file://${videoPath}`
 })
 </script>
