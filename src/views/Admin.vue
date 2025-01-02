@@ -203,13 +203,15 @@ const questionSettings = ref({
         单选: userStore.getQuestionScores.choice,
         多选: userStore.getQuestionScores.multiple,
         判断: userStore.getQuestionScores.judgment,
-        简答: userStore.getQuestionScores.essay
+        简答: userStore.getQuestionScores.essay,
+        填空: userStore.getQuestionScores.fill
     },
     counts: {
         单选: userStore.getQuestionCounts.choice,
         多选: userStore.getQuestionCounts.multiple,
         判断: userStore.getQuestionCounts.judgment,
-        简答: userStore.getQuestionCounts.essay
+        简答: userStore.getQuestionCounts.essay,
+        填空: userStore.getQuestionCounts.fill
     }
 })
 
@@ -219,13 +221,15 @@ const saveQuestionSettings = () => {
         choice: questionSettings.value.scores.单选,
         multiple: questionSettings.value.scores.多选,
         judgment: questionSettings.value.scores.判断,
-        essay: questionSettings.value.scores.简答
+        essay: questionSettings.value.scores.简答,
+        fill: questionSettings.value.scores.填空
     })
     userStore.setQuestionCounts({
         choice: questionSettings.value.counts.单选,
         multiple: questionSettings.value.counts.多选,
         judgment: questionSettings.value.counts.判断,
-        essay: questionSettings.value.counts.简答
+        essay: questionSettings.value.counts.简答,
+        fill: questionSettings.value.counts.填空
     })
     message.success('题目设置已保存')
 }

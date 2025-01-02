@@ -26,15 +26,17 @@ export const QUESTION_SCORES = {
     choice: 3,     // 单选题
     multiple: 5,   // 多选题
     judgment: 2,   // 判断题
-    essay: 15      // 阐述题
+    essay: 15,     // 阐述题
+    fill: 2        // 填空题
 }
 
 // 定义抽题数量
 export const QUESTION_COUNTS = {
-    choice: 10,     // 个单选题
+    choice: 10,    // 个单选题
     multiple: 4,   // 个多选题
-    judgment: 10,   // 个判断题
-    essay: 2       // 个阐述题
+    judgment: 10,  // 个判断题
+    essay: 2,      // 个阐述题
+    fill: 5        // 个填空题
 }
 
 // Store 状态接口

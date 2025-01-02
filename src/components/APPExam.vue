@@ -70,6 +70,22 @@
                 </n-form>
             </div>
 
+             <!-- 填空题部分 -->
+             <div class="mb-8">
+                <div class="text-lg font-bold mb-4 pb-2 border-b">
+                    填空题（每题{{ questionScores.fill }}分，共{{ fillQuestions.length * questionScores.fill }}分）
+                </div>
+                <n-form ref="fillFormRef" :model="answers.fill" :rules="fillRules">
+                    <div v-for="(question, index) in fillQuestions" :key="question.id" class="mb-8">
+                        <n-form-item :path="`q${question.id}`" :label="`${index + 1}. ${question.title}`">
+                            <n-input v-model:value="answers.fill[`q${question.id}`]" 
+                                type="text"
+                                placeholder="请输入答案" />
+                        </n-form-item>
+                    </div>
+                </n-form>
+            </div>
+
             <!-- 阐述题部分 -->
             <div class="mb-8">
                 <div class="text-lg font-bold mb-4 pb-2 border-b">
@@ -84,6 +100,8 @@
                     </div>
                 </n-form>
             </div>
+
+           
 
             <!-- 提交按钮 -->
             <div class="flex justify-center mt-8">
@@ -146,6 +164,16 @@
                                 <div class="flex items-center space-x-2">
                                     <span class="text-xl font-bold">{{ scoreDetails.essay }}</span>
                                     <span class="text-gray-500">/ {{ essayQuestions.length * questionScores.essay
+                                        }}</span>
+                                </div>
+                            </div>
+
+                            <!-- 填空题得分 -->
+                            <div class="flex justify-between items-center">
+                                <div class="font-medium">填空题</div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xl font-bold">{{ scoreDetails.fill }}</span>
+                                    <span class="text-gray-500">/ {{ fillQuestions.length * questionScores.fill
                                         }}</span>
                                 </div>
                             </div>
@@ -266,6 +294,34 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- 填空题详情 -->
+                        <div v-if="fillQuestions.length">
+                            <h3 class="text-lg font-bold mb-4">填空题</h3>
+                            <div class="space-y-4">
+                                <div v-for="(question, index) in fillQuestions" :key="question.id"
+                                    class="p-4 rounded-lg"
+                                    :class="isAnswerCorrect('fill', question) ? 'dark:bg-green-900/20' : 'dark:bg-red-900/20'">
+                                    <div class="flex items-start justify-between">
+                                        <div>
+                                            <div class="font-medium mb-2">
+                                                {{ index + 1 }}. {{ question.title }}
+                                            </div>
+                                            <div class="text-sm dark:text-gray-400">
+                                                您的答案：{{ getAnswerDisplay('fill', question) }}
+                                            </div>
+                                            <div class="text-sm"
+                                                :class="isAnswerCorrect('fill', question) ? 'text-green-500' : 'text-red-500'">
+                                                正确答案：{{ question.answer }}
+                                            </div>
+                                        </div>
+                                        <n-tag :type="isAnswerCorrect('fill', question) ? 'success' : 'error'">
+                                            {{ isAnswerCorrect('fill', question) ? '正确' : '错误' }}
+                                        </n-tag>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </n-tab-pane>
             </n-tabs>
@@ -289,6 +345,7 @@ import { useUserStore } from '../store'
 import { useMessage } from 'naive-ui'
 import type { FormInst } from 'naive-ui'
 import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
 
 
 const message = useMessage()
@@ -300,6 +357,7 @@ const choiceFormRef = ref<FormInst | null>(null)
 const judgmentFormRef = ref<FormInst | null>(null)
 const multipleFormRef = ref<FormInst | null>(null)
 const essayFormRef = ref<FormInst | null>(null)
+const fillFormRef = ref<FormInst | null>(null)
 
 // 修改答案类型定义
 interface Answers {
@@ -307,6 +365,7 @@ interface Answers {
     multiple: Record<string, string[]>
     judgment: Record<string, string>
     essay: Record<string, string>
+    fill: Record<string, string>
 }
 
 // 初始化答案对象，按题型分类
@@ -314,7 +373,8 @@ const answers = ref<Answers>({
     choice: {},
     multiple: {},
     judgment: {},
-    essay: {}
+    essay: {},
+    fill: {}
 })
 
 // 随机抽取考试题目
@@ -378,6 +438,19 @@ const essayRules = computed(() => {
     return rules
 })
 
+// 添加填空题验证规则
+const fillRules = computed(() => {
+    const rules: Record<string, any> = {}
+    fillQuestions.value.forEach(q => {
+        rules[`q${q.id}`] = {
+            required: true,
+            message: '请填写答案',
+            trigger: ['blur', 'change']
+        }
+    })
+    return rules
+})
+
 // 计算阐述题得分
 const calculateEssayScore = (answer: string, keywords: string[]) => {
     if (!answer || !keywords.length) return 0
@@ -401,7 +474,8 @@ const scoreDetails = ref({
     choice: 0,
     judgment: 0,
     multiple: 0,
-    essay: 0
+    essay: 0,
+    fill: 0
 })
 
 // 计算得分详情
@@ -410,7 +484,8 @@ const calculateScoreDetails = () => {
         choice: 0,
         multiple: 0,
         judgment: 0,
-        essay: 0
+        essay: 0,
+        fill: 0
     }
 
     examQuestions.value.forEach(question => {
@@ -464,6 +539,12 @@ const calculateScoreDetails = () => {
                     details.essay += calculateEssayScore(answer as string, question.keywords)
                 }
                 break
+
+            case 'fill':
+                if (answer?.toLowerCase() === question.answer?.toLowerCase()) {
+                    details.fill += questionScores.value.fill
+                }
+                break
         }
     })
 
@@ -477,7 +558,8 @@ const handleSubmit = async () => {
             choiceFormRef.value?.validate(),
             judgmentFormRef.value?.validate(),
             multipleFormRef.value?.validate(),
-            essayFormRef.value?.validate()
+            essayFormRef.value?.validate(),
+            fillFormRef.value?.validate()
         ])
 
         if (!validations.some(v => v?.warnings?.length)) {
@@ -526,6 +608,10 @@ const essayQuestions = computed(() =>
     examQuestions.value.filter(q => q.type === 'essay')
 )
 
+const fillQuestions = computed(() =>
+    examQuestions.value.filter(q => q.type === 'fill')
+)
+
 onMounted(async () => {
     try {
         await dataManager.init()
@@ -548,6 +634,8 @@ const isAnswerCorrect = (type: keyof Answers, question: Question) => {
             const userAnswers = (answer as string[]).sort().join(',')
             const correctAnswers = question.answer?.split(',').sort().join(',')
             return userAnswers === correctAnswers
+        case 'fill':
+            return answer?.toLowerCase() === question.answer?.toLowerCase()
         default:
             return false
     }

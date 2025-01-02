@@ -15,7 +15,7 @@ export interface Video {
 }
 
 // 定义题目类型
-export type QuestionType = 'choice' | 'multiple' | 'judgment' | 'essay'
+export type QuestionType = 'choice' | 'multiple' | 'judgment' | 'essay' | 'fill'
 
 // 选择题选项接口
 export interface Option {
@@ -40,6 +40,7 @@ export interface QuestionBank {
     multiple: Question[]
     judgment: Question[]
     essay: Question[]
+    fill: Question[]
 }
 
 // 从题库中随机抽取指定数量的题目
@@ -85,7 +86,8 @@ class DataManager {
         choice: [],
         multiple: [],
         judgment: [],
-        essay: []
+        essay: [],
+        fill: []
     }
     private dataPath: string = ''
     private initialized = false
@@ -123,6 +125,8 @@ class DataManager {
             this.questionBank.multiple = this.transformMultipleQuestions(multipleData)
             this.questionBank.judgment = this.transformJudgmentQuestions(judgmentData)
             this.questionBank.essay = this.transformEssayQuestions(essayData)
+            // 从选择题数据源转换填空题
+            this.questionBank.fill = this.transformFillQuestions(choiceData)
 
             this.initialized = true
             console.log('Data initialized successfully')
@@ -225,6 +229,42 @@ class DataManager {
                     isMultiple: true  // 标记为多选题
                 }
             })
+    }
+
+    // 修改转换填空题数据方法
+    private transformFillQuestions(data: any[]): Question[] {
+        return data.filter(item => item.title && item.answer && item.optionA)  // 确保必要字段存在
+            .map((item, index) => {
+                // 移除题目中括号内的内容作为填空
+                const title = String(item.title).trim().replace(/\[.*?\]/g, '____')
+                
+                // 根据选项标签（如'A'）找到对应的选项内容作为答案
+                const answerLabel = String(item.answer || '').trim().toUpperCase()
+                let answer = ''
+                
+                switch(answerLabel) {
+                    case 'A':
+                        answer = String(item.optionA || '').trim()
+                        break
+                    case 'B':
+                        answer = String(item.optionB || '').trim()
+                        break
+                    case 'C':
+                        answer = String(item.optionC || '').trim()
+                        break
+                    case 'D':
+                        answer = String(item.optionD || '').trim()
+                        break
+                }
+
+                return {
+                    id: index + 1,
+                    type: 'fill',
+                    title,
+                    answer
+                }
+            })
+            .filter(item => item.answer) // 过滤掉没有找到答案的题目
     }
 
     // 获取所有视频（扁平化）
