@@ -63,7 +63,9 @@ export const getRandomQuestions = (questionBank: QuestionBank): Question[] => {
         ...shuffle([...questionBank.choice]).slice(0, questionCounts.choice),
         ...shuffle([...questionBank.multiple]).slice(0, questionCounts.multiple),
         ...shuffle([...questionBank.judgment]).slice(0, questionCounts.judgment),
-        ...shuffle([...questionBank.essay]).slice(0, questionCounts.essay)
+        ...shuffle([...questionBank.essay]).slice(0, questionCounts.essay),
+        // 增加填空题
+        ...shuffle([...questionBank.fill]).slice(0, questionCounts.fill)
     ]
 
     // 设置分值
