@@ -1,28 +1,68 @@
 <template>
     <div class="admin-container">
-        <n-card title="用户管理">
-            <template #header-extra>
-                <n-space>
-                    <n-button @click="refreshData">
-                        刷新数据
-                    </n-button>
-                    <n-button @click="clearStore">
-                        清空数据
-                    </n-button>
-                </n-space>
-            </template>
+        <n-tabs type="line">
+            <n-tab-pane name="user-management" tab="用户管理">
+                <n-card>
+                    <template #header-extra>
+                        <n-space>
+                            <n-button @click="refreshData">
+                                刷新数据
+                            </n-button>
+                            <n-button @click="clearStore">
+                                清空数据
+                            </n-button>
+                        </n-space>
+                    </template>
 
-            <!-- 用户列表表格 -->
-            <n-data-table :columns="columns" :data="userList" :pagination="pagination" :bordered="false" striped />
-        </n-card>
+                    <!-- 用户列表表格 -->
+                    <n-data-table :columns="columns" :data="userList" :pagination="pagination" :bordered="false" striped />
+                </n-card>
+            </n-tab-pane>
+
+            <n-tab-pane name="question-settings" tab="题目设置">
+                <n-card>
+                    <n-form :model="questionSettings" ref="questionSettingsForm" label-placement="left" label-width="120px">
+                        <n-space vertical>
+                            <n-space vertical>
+                                <h3>题目分值设置</h3>
+                                <n-form-item v-for="(score, type) in questionSettings.scores" :key="type" :label="`${type} 分值`">
+                                    <n-input-number v-model:value="questionSettings.scores[type]" :min="1" />
+                                </n-form-item>
+                            </n-space>
+                            <n-space vertical>
+                                <h3>题目数量设置</h3>
+                                <n-form-item v-for="(count, type) in questionSettings.counts" :key="type" :label="`${type} 数量`">
+                                    <n-input-number v-model:value="questionSettings.counts[type]" :min="1" />
+                                </n-form-item>
+                            </n-space>
+                            <n-form-item>
+                                <n-button type="primary" @click="saveQuestionSettings">保存设置</n-button>
+                            </n-form-item>
+                        </n-space>
+                    </n-form>
+                </n-card>
+            </n-tab-pane>
+        </n-tabs>
+
+        <!-- 历史成绩弹窗 -->
+        <n-modal v-model:show="showHistoryModal" title="历史考试成绩" >
+            <n-card  style="width: 80%">
+                <n-data-table :columns="historyColumns" :data="selectedUserRecords"  striped />
+            </n-card>
+           
+            <template #footer>
+                <n-button @click="showHistoryModal = false">关闭</n-button>
+            </template>
+        </n-modal>
     </div>
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue'
 import { useUserStore } from '../store'
-import { NTag, NButton, NSpace, useMessage } from 'naive-ui'
+import { NTag, NButton, NSpace, useMessage, NForm, NFormItem, NInputNumber, NCard, NTabs, NTabPane, NDataTable, NModal } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
-import type { User } from '../store'
+import type { User, ExamRecord } from '../store'
 
 const userStore = useUserStore()
 const message = useMessage()
@@ -39,22 +79,15 @@ const columns: DataTableColumns<User> = [
         key: 'name',
     },
     {
-        title: '考试成绩',
-        key: 'examScore',
+        title: '最新考试成绩',
+        key: 'latestExamRecord',
         render(row) {
-            if (row.examScore === undefined) {
+            if (!row.examRecords || row.examRecords.length === 0) {
                 return h(NTag, { type: 'warning' }, { default: () => '未参加考试' })
             }
-            const type = row.examScore >= 60 ? 'success' : 'error'
-            return h(NTag, { type }, { default: () => `${row.examScore}分` })
-        }
-    },
-    {
-        title: '考试时间',
-        key: 'examTime',
-        render(row) {
-            if (!row.examTime) return '未参加考试'
-            return new Date(row.examTime).toLocaleString()
+            const latestRecord = row.examRecords.slice(-1)[0]
+            const type = latestRecord.score >= 60 ? 'success' : 'error'
+            return h(NTag, { type }, { default: () => `${latestRecord.score}分 (${new Date(latestRecord.time).toLocaleString()})` })
         }
     },
     {
@@ -75,14 +108,14 @@ const columns: DataTableColumns<User> = [
         render(row) {
             return h(NSpace, {}, {
                 default: () => [
-                    // h(
-                    //     NButton,
-                    //     {
-                    //         size: 'small',
-                    //         onClick: () => handleResetPassword(row.name)
-                    //     },
-                    //     { default: () => '重置密码' }
-                    // ),
+                    h(
+                        NButton,
+                        {
+                            size: 'small',
+                            onClick: () => handleViewHistory(row)
+                        },
+                        { default: () => '查看历史成绩' }
+                    ),
                     h(
                         NButton,
                         {
@@ -97,6 +130,28 @@ const columns: DataTableColumns<User> = [
         }
     }
 ]
+
+// 历史成绩表格列定义
+const historyColumns: DataTableColumns<ExamRecord> = [
+    {
+        title: '考试成绩',
+        key: 'score',
+        render(row) {
+            const type = row.score >= 60 ? 'success' : 'error'
+            return h(NTag, { type }, { default: () => `${row.score}分` })
+        }
+    },
+    {
+        title: '考试时间',
+        key: 'time',
+        render(row) {
+            return new Date(row.time).toLocaleString()
+        }
+    }
+]
+
+const showHistoryModal = ref(false)
+const selectedUserRecords = ref<ExamRecord[]>([])
 
 // 分页配置
 const pagination = {
@@ -134,6 +189,45 @@ const clearStore = () => {
             message.success('数据已清空')
         }
     })
+}
+
+// 查看历史成绩
+const handleViewHistory = (user: User) => {
+    selectedUserRecords.value = user.examRecords || []
+    showHistoryModal.value = true
+}
+
+// 题目设置
+const questionSettings = ref({
+    scores: {
+        单选: userStore.getQuestionScores.choice,
+        多选: userStore.getQuestionScores.multiple,
+        判断: userStore.getQuestionScores.judgment,
+        简答: userStore.getQuestionScores.essay
+    },
+    counts: {
+        单选: userStore.getQuestionCounts.choice,
+        多选: userStore.getQuestionCounts.multiple,
+        判断: userStore.getQuestionCounts.judgment,
+        简答: userStore.getQuestionCounts.essay
+    }
+})
+
+// 保存题目设置
+const saveQuestionSettings = () => {
+    userStore.setQuestionScores({
+        choice: questionSettings.value.scores.单选,
+        multiple: questionSettings.value.scores.多选,
+        judgment: questionSettings.value.scores.判断,
+        essay: questionSettings.value.scores.简答
+    })
+    userStore.setQuestionCounts({
+        choice: questionSettings.value.counts.单选,
+        multiple: questionSettings.value.counts.多选,
+        judgment: questionSettings.value.counts.判断,
+        essay: questionSettings.value.counts.简答
+    })
+    message.success('题目设置已保存')
 }
 
 </script>

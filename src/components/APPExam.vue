@@ -12,7 +12,7 @@
             <!-- 选择题部分 -->
             <div class="mb-8">
                 <div class="text-lg font-bold mb-4 pb-2 border-b">
-                    选择题（每题{{ QUESTION_SCORES.choice }}分，共{{ choiceQuestions.length * QUESTION_SCORES.choice }}分）
+                    选择题（每题{{ questionScores.choice }}分，共{{ choiceQuestions.length * questionScores.choice }}分）
                 </div>
                 <n-form ref="choiceFormRef" :model="answers.choice" :rules="choiceRules">
                     <div v-for="(question, index) in choiceQuestions" :key="question.id" class="mb-8">
@@ -33,7 +33,7 @@
             <!-- 判断题部分 -->
             <div class="mb-8">
                 <div class="text-lg font-bold mb-4 pb-2 border-b">
-                    判断题（每题{{ QUESTION_SCORES.judgment }}分，共{{ judgmentQuestions.length * QUESTION_SCORES.judgment }}分）
+                    判断题（每题{{ questionScores.judgment }}分，共{{ judgmentQuestions.length * questionScores.judgment }}分）
                 </div>
                 <n-form ref="judgmentFormRef" :model="answers.judgment" :rules="judgmentRules">
                     <div v-for="(question, index) in judgmentQuestions" :key="question.id" class="mb-8">
@@ -52,7 +52,7 @@
             <!-- 多选题部分 -->
             <div class="mb-8">
                 <div class="text-lg font-bold mb-4 pb-2 border-b">
-                    多选题（每题{{ QUESTION_SCORES.multiple }}分，共{{ multipleQuestions.length * QUESTION_SCORES.multiple }}分）
+                    多选题（每题{{ questionScores.multiple }}分，共{{ multipleQuestions.length * questionScores.multiple }}分）
                 </div>
                 <n-form ref="multipleFormRef" :model="answers.multiple" :rules="multipleRules">
                     <div v-for="(question, index) in multipleQuestions" :key="question.id" class="mb-8">
@@ -73,7 +73,7 @@
             <!-- 阐述题部分 -->
             <div class="mb-8">
                 <div class="text-lg font-bold mb-4 pb-2 border-b">
-                    阐述题（每题{{ QUESTION_SCORES.essay }}分，共{{ essayQuestions.length * QUESTION_SCORES.essay }}分）
+                    阐述题（每题{{ questionScores.essay }}分，共{{ essayQuestions.length * questionScores.essay }}分）
                 </div>
                 <n-form ref="essayFormRef" :model="answers.essay" :rules="essayRules">
                     <div v-for="(question, index) in essayQuestions" :key="question.id" class="mb-8">
@@ -115,7 +115,7 @@
                                 <div class="font-medium">选择题</div>
                                 <div class="flex items-center space-x-2">
                                     <span class="text-xl font-bold">{{ scoreDetails.choice }}</span>
-                                    <span class="text-gray-500">/ {{ choiceQuestions.length * QUESTION_SCORES.choice
+                                    <span class="text-gray-500">/ {{ choiceQuestions.length * questionScores.choice
                                         }}</span>
                                 </div>
                             </div>
@@ -125,7 +125,7 @@
                                 <div class="font-medium">判断题</div>
                                 <div class="flex items-center space-x-2">
                                     <span class="text-xl font-bold">{{ scoreDetails.judgment }}</span>
-                                    <span class="text-gray-500">/ {{ judgmentQuestions.length * QUESTION_SCORES.judgment
+                                    <span class="text-gray-500">/ {{ judgmentQuestions.length * questionScores.judgment
                                         }}</span>
                                 </div>
                             </div>
@@ -135,7 +135,7 @@
                                 <div class="font-medium">多选题</div>
                                 <div class="flex items-center space-x-2">
                                     <span class="text-xl font-bold">{{ scoreDetails.multiple }}</span>
-                                    <span class="text-gray-500">/ {{ multipleQuestions.length * QUESTION_SCORES.multiple
+                                    <span class="text-gray-500">/ {{ multipleQuestions.length * questionScores.multiple
                                         }}</span>
                                 </div>
                             </div>
@@ -145,7 +145,7 @@
                                 <div class="font-medium">阐述题</div>
                                 <div class="flex items-center space-x-2">
                                     <span class="text-xl font-bold">{{ scoreDetails.essay }}</span>
-                                    <span class="text-gray-500">/ {{ essayQuestions.length * QUESTION_SCORES.essay
+                                    <span class="text-gray-500">/ {{ essayQuestions.length * questionScores.essay
                                         }}</span>
                                 </div>
                             </div>
@@ -257,7 +257,7 @@
                                             您的答案：{{ answers.essay[`q${question.id}`] }}
                                         </div>
                                         <div class="text-sm text-emerald-500">
-                                            得分：{{ getEssayScore(question) }} / {{ QUESTION_SCORES.essay }}
+                                            得分：{{ getEssayScore(question) }} / {{ questionScores.essay }}
                                         </div>
                                         <div class="text-sm dark:text-gray-400 mt-2">
                                             关键词：{{ question.keywords?.join('、') }}
@@ -284,7 +284,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { dataManager, getRandomQuestions, Question, QUESTION_SCORES } from '../datas'
+import { dataManager, getRandomQuestions, Question } from '../datas'
 import { useUserStore } from '../store'
 import { useMessage } from 'naive-ui'
 import type { FormInst } from 'naive-ui'
@@ -293,7 +293,7 @@ import { storeToRefs } from 'pinia'
 
 const message = useMessage()
 const userStore = useUserStore()
-const { currentUser } = storeToRefs(userStore)
+const { currentUser, questionScores } = storeToRefs(userStore)
 
 // 表单引用
 const choiceFormRef = ref<FormInst | null>(null)
@@ -392,7 +392,7 @@ const calculateEssayScore = (answer: string, keywords: string[]) => {
 
     // 按关键词匹配比例计算得分
     const matchRatio = matchedKeywords.length / keywords.length
-    return Math.floor(matchRatio * QUESTION_SCORES.essay)
+    return Math.floor(matchRatio * questionScores.value.essay)
 }
 
 const showScoreModal = ref(false)
@@ -423,7 +423,7 @@ const calculateScoreDetails = () => {
         switch (question.type) {
             case 'choice':
                 if (answer === question.answer) {
-                    details.choice += QUESTION_SCORES.choice
+                    details.choice += questionScores.value.choice
                 }
                 break
 
@@ -443,11 +443,11 @@ const calculateScoreDetails = () => {
 
                 if (correctCount === totalCorrect) {
                     // 全部正确，得满分
-                    details.multiple += QUESTION_SCORES.multiple
+                    details.multiple += questionScores.value.multiple
                 } else {
                     // 部分正确，按比例得分
                     const ratio = correctCount / totalCorrect
-                    const score = Math.floor(QUESTION_SCORES.multiple * ratio)
+                    const score = Math.floor(questionScores.value.multiple * ratio)
                     // 确保至少得1分
                     details.multiple += Math.max(1, score)
                 }
@@ -455,7 +455,7 @@ const calculateScoreDetails = () => {
 
             case 'judgment':
                 if (answer === question.answer) {
-                    details.judgment += QUESTION_SCORES.judgment
+                    details.judgment += questionScores.value.judgment
                 }
                 break
 

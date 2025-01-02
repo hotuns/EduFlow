@@ -12,8 +12,29 @@ export interface User {
     password: string
     type: UserType
     videoStates: VideoState[]
-    examScore?: number
-    examTime?: number
+    examRecords?: ExamRecord[]
+}
+
+// 考试记录接口
+export interface ExamRecord {
+    score: number
+    time: number
+}
+
+// 定义题目分值
+export const QUESTION_SCORES = {
+    choice: 3,     // 单选题
+    multiple: 5,   // 多选题
+    judgment: 2,   // 判断题
+    essay: 15      // 阐述题
+}
+
+// 定义抽题数量
+export const QUESTION_COUNTS = {
+    choice: 10,     // 个单选题
+    multiple: 4,   // 个多选题
+    judgment: 10,   // 个判断题
+    essay: 2       // 个阐述题
 }
 
 // Store 状态接口
@@ -22,13 +43,12 @@ interface StoreState {
     currentUser: User | null
     collapsed: boolean
     theme: 'light' | 'dark'
+    questionScores: typeof QUESTION_SCORES,
+    questionCounts: typeof QUESTION_COUNTS
 }
 
 // 创建 electron-store 实例
 const electronStore = new Store()
-
-
-
 
 // 初始化管理员账号
 function initAdmin() {
@@ -38,7 +58,8 @@ function initAdmin() {
             name: 'admin',
             password: 'nimda',
             type: 'admin',
-            videoStates: []
+            videoStates: [],
+            examRecords: []
         }
         electronStore.set('users', [adminUser])
         return [adminUser]
@@ -51,7 +72,9 @@ export const useUserStore = defineStore('user', {
         users: initAdmin(),
         currentUser: electronStore.get('currentUser') as User | null,
         collapsed: electronStore.get('collapsed') as boolean || false,
-        theme: electronStore.get('theme') as 'light' | 'dark' || 'dark'
+        theme: electronStore.get('theme') as 'light' | 'dark' || 'dark',
+        questionScores: electronStore.get('questionScores') as any ||  QUESTION_SCORES,
+        questionCounts:electronStore.get('questionCounts') as any || QUESTION_COUNTS
     }),
 
     getters: {
@@ -60,7 +83,9 @@ export const useUserStore = defineStore('user', {
         getVideoStates: (state) => (userName: string) => {
             const user = state.users.find(u => u.name === userName)
             return user?.videoStates || []
-        }
+        },
+        getQuestionScores: (state) => state.questionScores,
+        getQuestionCounts: (state) => state.questionCounts
     },
 
     actions: {
@@ -98,8 +123,7 @@ export const useUserStore = defineStore('user', {
                 password: '123456',
                 type: 'student',
                 videoStates: [],
-                examScore: undefined,
-                examTime: undefined
+                examRecords: []
             }
 
             this.users.unshift(newUser)
@@ -146,11 +170,22 @@ export const useUserStore = defineStore('user', {
         saveExamResult(userName: string, score: number) {
             const user = this.users.find(u => u.name === userName)
             if (user) {
-                user.examScore = score
-                user.examTime = Date.now()
+                const newRecord: ExamRecord = {
+                    score,
+                    time: Date.now()
+                }
+                user.examRecords = user.examRecords ? [...user.examRecords, newRecord] : [newRecord]
                 console.log('保存考试结果', user)
                 this.users = this.users.map(u => u.name === userName ? user : u)
             }
+        },
+
+        setQuestionScores(newScores: typeof QUESTION_SCORES) {
+            this.questionScores = newScores
+        },
+
+        setQuestionCounts(newCounts: typeof QUESTION_COUNTS) {
+            this.questionCounts = newCounts
         },
 
         clearStore() {
@@ -165,7 +200,18 @@ export const useUserStore = defineStore('user', {
 // 创建一个监听器来同步状态到 electron-store
 export function setupStoreSync() {
     const store = useUserStore()
-    const { users, currentUser, collapsed } = storeToRefs(store)
+    const { users, currentUser, collapsed, questionScores, questionCounts } = storeToRefs(store)
+
+    // 监听题目分值变化
+    watch(questionScores, (newScores) => {
+        electronStore.set('questionScores', newScores)
+    })
+
+    // 监听抽题数量变化
+    watch(questionCounts, (newCounts) => {
+        electronStore.set('questionCounts', newCounts)
+    })
+
 
     // 监听用户数据变化
     watch(users, (newUsers) => {
@@ -182,4 +228,4 @@ export function setupStoreSync() {
     watch(collapsed, (newCollapsed) => {
         electronStore.set('collapsed', newCollapsed)
     })
-} 
+}

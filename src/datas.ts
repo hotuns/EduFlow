@@ -1,3 +1,5 @@
+import { useUserStore } from './store'
+
 // 添加视频状态类型定义
 export interface VideoState {
     id: number
@@ -32,28 +34,6 @@ export interface Question {
     score?: number      // 分值会在代码中设置
 }
 
-// 定义题目分值
-export const QUESTION_SCORES = {
-    choice: 3,     // 单选题
-    multiple: 5,   // 多选题
-    judgment: 2,   // 判断题
-    essay: 15      // 阐述题
-}
-
-// 定义抽题数量
-export const QUESTION_COUNTS = {
-    choice: 2,     // 个单选题
-    multiple: 2,   // 个多选题
-    judgment: 2,   // 个判断题
-    essay: 2       // 个阐述题
-}
-// export const QUESTION_COUNTS = {
-//     choice: 10,     // 个单选题
-//     multiple: 4,   // 个多选题
-//     judgment: 10,   // 个判断题
-//     essay: 2       // 个阐述题
-// }
-
 // 修改题库返回类型
 export interface QuestionBank {
     choice: Question[]
@@ -64,6 +44,10 @@ export interface QuestionBank {
 
 // 从题库中随机抽取指定数量的题目
 export const getRandomQuestions = (questionBank: QuestionBank): Question[] => {
+    const store = useUserStore()
+    const questionScores = store.getQuestionScores
+    const questionCounts = store.getQuestionCounts
+
     // Fisher-Yates 洗牌算法
     const shuffle = (array: Question[]) => {
         for (let i = array.length - 1; i > 0; i--) {
@@ -75,16 +59,16 @@ export const getRandomQuestions = (questionBank: QuestionBank): Question[] => {
 
     // 随机抽取题目
     const selectedQuestions = [
-        ...shuffle([...questionBank.choice]).slice(0, QUESTION_COUNTS.choice),
-        ...shuffle([...questionBank.multiple]).slice(0, QUESTION_COUNTS.multiple),
-        ...shuffle([...questionBank.judgment]).slice(0, QUESTION_COUNTS.judgment),
-        ...shuffle([...questionBank.essay]).slice(0, QUESTION_COUNTS.essay)
+        ...shuffle([...questionBank.choice]).slice(0, questionCounts.choice),
+        ...shuffle([...questionBank.multiple]).slice(0, questionCounts.multiple),
+        ...shuffle([...questionBank.judgment]).slice(0, questionCounts.judgment),
+        ...shuffle([...questionBank.essay]).slice(0, questionCounts.essay)
     ]
 
     // 设置分值
     return selectedQuestions.map(q => ({
         ...q,
-        score: QUESTION_SCORES[q.type]
+        score: questionScores[q.type]
     }))
 }
 
