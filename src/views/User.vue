@@ -88,9 +88,8 @@ const { currentUser } = storeToRefs(userStore)
 
 // 检查是否有考试成绩
 const hasExamScore = computed(() => {
-    return currentUser.value?.examScore !== undefined
+    return currentUser.value?.examRecords && currentUser.value.examRecords.length > 0
 })
-
 
 // 计算视频学习进度
 const videoProgress = computed(() => {

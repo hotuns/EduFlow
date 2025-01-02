@@ -45,14 +45,14 @@
                 <div class="flex flex-col justify-center items-center mb-12 dark:bg-gray-700/30 rounded-lg p-6">
                     <div class="text-center">
                         <div class="text-7xl font-bold text-emerald-400 mb-2">
-                            {{ userInfo?.examScore }}
+                            {{ latestExamRecord?.score }}
                         </div>
                         <div class="dark:text-gray-400">总分</div>
                     </div>
                     <n-divider class="dark:bg-gray-600" />
                     <div class="text-center">
                         <div class="text-4xl font-bold text-emerald-400 mb-2">
-                            {{ formatDate(userInfo?.examTime) }}
+                            {{ formatDate(latestExamRecord?.time) }}
                         </div>
                         <div class="dark:text-gray-400">考试时间</div>
                     </div>
@@ -101,6 +101,10 @@ const userStore = useUserStore()
 const { currentUser } = storeToRefs(userStore)
 const userInfo = computed(() => userStore.getUserInfo(currentUser.value?.name || ''))
 
+// 获取最新的考试记录
+const latestExamRecord = computed(() => {
+    return userInfo.value?.examRecords?.slice(-1)[0]
+})
 
 const resultRef = ref<HTMLElement>()
 const exporting = ref(false)
@@ -113,7 +117,7 @@ const videos = computed(() => dataManager.getVideos())
 
 // 生成证书编号
 const certificateNo = computed(() => {
-    const timestamp = userInfo.value?.examTime || Date.now()
+    const timestamp = latestExamRecord.value?.time || Date.now()
     const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
     return `CERT-${timestamp.toString(36)}-${random}`
 })

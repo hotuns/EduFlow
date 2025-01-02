@@ -83,7 +83,8 @@ const typeOptions = [
     { label: '单选题', value: 'choice' },
     { label: '多选题', value: 'multiple' },
     { label: '判断题', value: 'judgment' },
-    { label: '简答题', value: 'essay' }
+    { label: '简答题', value: 'essay' },
+    { label: '填空题', value: 'fill' }
 ]
 
 // 当前选中的题型，默认单选题
@@ -115,7 +116,8 @@ const getQuestionType = (type: string) => {
         'choice': '选择题',
         'judgment': '判断题',
         'essay': '简答题',
-        'multiple': '多选题'
+        'multiple': '多选题',
+        'fill': '填空题'
     }
     return typeMap[type as keyof typeof typeMap] || '未知类型'
 }

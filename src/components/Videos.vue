@@ -175,10 +175,20 @@ const playVideo = (videoId: number) => {
     const states = getVideoStates()
     const state = states.get(videoId)
 
+    // 暂停当前视频
+    if (videoRef.value) {
+        videoRef.value.pause()
+    }
+    isPlaying.value = false
+    
+
     // 重置当前时间和进度
     currentTime.value = 0
     duration.value = 0
     lastPosition.value = 0
+
+    
+    
 
     // 更新视频 URL
     videoUrl.value // 确保 videoUrl 被计算
