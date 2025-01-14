@@ -15,41 +15,46 @@
                     </template>
 
                     <!-- 用户列表表格 -->
-                    <n-data-table :columns="columns" :data="userList" :pagination="pagination" :bordered="false" striped />
+                    <n-data-table :columns="columns" :data="userList" :pagination="pagination" :bordered="false"
+                        striped />
                 </n-card>
             </n-tab-pane>
 
             <n-tab-pane name="question-settings" tab="题目设置">
                 <n-card>
-                    <n-form :model="questionSettings" ref="questionSettingsForm" label-placement="left" label-width="120px">
-                        <n-space vertical>
+                    <n-form :model="questionSettings" ref="questionSettingsForm" label-placement="left"
+                        label-width="120px">
+                        <n-flex>
                             <n-space vertical>
                                 <h3>题目分值设置</h3>
-                                <n-form-item v-for="(score, type) in questionSettings.scores" :key="type" :label="`${type} 分值`">
+                                <n-form-item v-for="(score, type) in questionSettings.scores" :key="type"
+                                    :label="`${type} 分值`">
                                     <n-input-number v-model:value="questionSettings.scores[type]" :min="1" />
                                 </n-form-item>
                             </n-space>
                             <n-space vertical>
                                 <h3>题目数量设置</h3>
-                                <n-form-item v-for="(count, type) in questionSettings.counts" :key="type" :label="`${type} 数量`">
+                                <n-form-item v-for="(count, type) in questionSettings.counts" :key="type"
+                                    :label="`${type} 数量`">
                                     <n-input-number v-model:value="questionSettings.counts[type]" :min="1" />
                                 </n-form-item>
                             </n-space>
-                            <n-form-item>
-                                <n-button type="primary" @click="saveQuestionSettings">保存设置</n-button>
-                            </n-form-item>
-                        </n-space>
+
+                        </n-flex>
+                        <n-form-item>
+                            <n-button type="primary" @click="saveQuestionSettings">保存设置</n-button>
+                        </n-form-item>
                     </n-form>
                 </n-card>
             </n-tab-pane>
         </n-tabs>
 
         <!-- 历史成绩弹窗 -->
-        <n-modal v-model:show="showHistoryModal" title="历史考试成绩" >
-            <n-card  style="width: 80%">
-                <n-data-table :columns="historyColumns" :data="selectedUserRecords"  striped />
+        <n-modal v-model:show="showHistoryModal" title="历史考试成绩">
+            <n-card style="width: 80%">
+                <n-data-table :columns="historyColumns" :data="selectedUserRecords" striped />
             </n-card>
-           
+
             <template #footer>
                 <n-button @click="showHistoryModal = false">关闭</n-button>
             </template>

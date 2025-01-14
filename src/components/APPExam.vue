@@ -70,26 +70,24 @@
                 </n-form>
             </div>
 
-             <!-- 填空题部分 -->
-             <div class="mb-8">
+            <!-- 填空题部分 -->
+            <div class="mb-8">
                 <div class="text-lg font-bold mb-4 pb-2 border-b">
                     填空题（每题{{ questionScores.fill }}分，共{{ fillQuestions.length * questionScores.fill }}分）
                 </div>
                 <n-form ref="fillFormRef" :model="answers.fill" :rules="fillRules">
                     <div v-for="(question, index) in fillQuestions" :key="question.id" class="mb-8">
                         <n-form-item :path="`q${question.id}`" :label="`${index + 1}. ${question.title}`">
-                            <n-input v-model:value="answers.fill[`q${question.id}`]" 
-                                type="text"
-                                placeholder="请输入答案" />
+                            <n-input v-model:value="answers.fill[`q${question.id}`]" type="text" placeholder="请输入答案" />
                         </n-form-item>
                     </div>
                 </n-form>
             </div>
 
-            <!-- 阐述题部分 -->
+            <!-- 简答题部分 -->
             <div class="mb-8">
                 <div class="text-lg font-bold mb-4 pb-2 border-b">
-                    阐述题（每题{{ questionScores.essay }}分，共{{ essayQuestions.length * questionScores.essay }}分）
+                    简答题（每题{{ questionScores.essay }}分，共{{ essayQuestions.length * questionScores.essay }}分）
                 </div>
                 <n-form ref="essayFormRef" :model="answers.essay" :rules="essayRules">
                     <div v-for="(question, index) in essayQuestions" :key="question.id" class="mb-8">
@@ -101,7 +99,7 @@
                 </n-form>
             </div>
 
-           
+
 
             <!-- 提交按钮 -->
             <div class="flex justify-center mt-8">
@@ -158,9 +156,9 @@
                                 </div>
                             </div>
 
-                            <!-- 阐述题得分 -->
+                            <!-- 简答题得分 -->
                             <div class="flex justify-between items-center">
-                                <div class="font-medium">阐述题</div>
+                                <div class="font-medium">简答题</div>
                                 <div class="flex items-center space-x-2">
                                     <span class="text-xl font-bold">{{ scoreDetails.essay }}</span>
                                     <span class="text-gray-500">/ {{ essayQuestions.length * questionScores.essay
@@ -271,30 +269,6 @@
                             </div>
                         </div>
 
-                        <!-- 阐述题详情 -->
-                        <div v-if="essayQuestions.length">
-                            <h3 class="text-lg font-bold mb-4">阐述题</h3>
-                            <div class="space-y-4">
-                                <div v-for="(question, index) in essayQuestions" :key="question.id"
-                                    class="p-4 rounded-lg dark:bg-gray-800/50">
-                                    <div>
-                                        <div class="font-medium mb-2">
-                                            {{ index + 1 }}. {{ question.title }}
-                                        </div>
-                                        <div class="text-sm dark:text-gray-400 mb-2">
-                                            您的答案：{{ answers.essay[`q${question.id}`] }}
-                                        </div>
-                                        <div class="text-sm text-emerald-500">
-                                            得分：{{ getEssayScore(question) }} / {{ questionScores.essay }}
-                                        </div>
-                                        <div class="text-sm dark:text-gray-400 mt-2">
-                                            关键词：{{ question.keywords?.join('、') }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- 填空题详情 -->
                         <div v-if="fillQuestions.length">
                             <h3 class="text-lg font-bold mb-4">填空题</h3>
@@ -322,6 +296,32 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- 简答题详情 -->
+                        <div v-if="essayQuestions.length">
+                            <h3 class="text-lg font-bold mb-4">简答题</h3>
+                            <div class="space-y-4">
+                                <div v-for="(question, index) in essayQuestions" :key="question.id"
+                                    class="p-4 rounded-lg dark:bg-gray-800/50">
+                                    <div>
+                                        <div class="font-medium mb-2">
+                                            {{ index + 1 }}. {{ question.title }}
+                                        </div>
+                                        <div class="text-sm dark:text-gray-400 mb-2">
+                                            您的答案：{{ answers.essay[`q${question.id}`] }}
+                                        </div>
+                                        <div class="text-sm text-emerald-500">
+                                            得分：{{ getEssayScore(question) }} / {{ questionScores.essay }}
+                                        </div>
+                                        <div class="text-sm dark:text-gray-400 mt-2">
+                                            关键词：{{ question.keywords?.join('、') }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
                     </div>
                 </n-tab-pane>
             </n-tabs>
@@ -451,7 +451,7 @@ const fillRules = computed(() => {
     return rules
 })
 
-// 计算阐述题得分
+// 计算简答题得分
 const calculateEssayScore = (answer: string, keywords: string[]) => {
     if (!answer || !keywords.length) return 0
 
@@ -541,7 +541,7 @@ const calculateScoreDetails = () => {
                 break
 
             case 'fill':
-                if (answer?.toLowerCase() === question.answer?.toLowerCase()) {
+                if ((answer as string).toLowerCase() === question.answer?.toLowerCase()) {
                     details.fill += questionScores.value.fill
                 }
                 break
@@ -635,7 +635,7 @@ const isAnswerCorrect = (type: keyof Answers, question: Question) => {
             const correctAnswers = question.answer?.split(',').sort().join(',')
             return userAnswers === correctAnswers
         case 'fill':
-            return answer?.toLowerCase() === question.answer?.toLowerCase()
+            return (answer as string)?.toLowerCase() === question.answer?.toLowerCase()
         default:
             return false
     }
