@@ -91,13 +91,12 @@ const hasExamScore = computed(() => {
     return currentUser.value?.examRecords && currentUser.value.examRecords.length > 0
 })
 
+// 获取所有视频总数（扁平化后）
+const totalVideos = dataManager.getVideos().length
 // 计算视频学习进度
 const videoProgress = computed(() => {
     const videoStates = currentUser.value?.videoStates
     if (!videoStates?.length) return 0
-
-    // 获取所有视频总数（扁平化后）
-    const totalVideos = dataManager.getVideos().length
 
     // 计算已完成的视频数量
     const completed = videoStates.reduce((count, state) => {

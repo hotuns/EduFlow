@@ -30,6 +30,27 @@
                 </n-form>
             </div>
 
+            <!--  扩展题部分 -->
+            <div class="mb-8">
+                <div class="text-lg font-bold mb-4 pb-2 border-b">
+                    扩展题（每题{{ questionScores.expand }}分，共{{ expandQuestions.length * questionScores.expand }}分）
+                </div>
+                <n-form ref="expandFormRef" :model="answers.expand" :rules="expandRules">
+                    <div v-for="(question, index) in expandQuestions" :key="question.id" class="mb-8">
+                        <n-form-item :path="`q${question.id}`" :label="`${index + 1}. ${question.title}`">
+                            <n-radio-group v-model:value="answers.expand[`q${question.id}`]">
+                                <n-space vertical>
+                                    <n-radio v-for="option in question.options" :key="option.value"
+                                        :value="option.label">
+                                        {{ option.label }}. {{ option.value }}
+                                    </n-radio>
+                                </n-space>
+                            </n-radio-group>
+                        </n-form-item>
+                    </div>
+                </n-form>
+            </div>
+
             <!-- 判断题部分 -->
             <div class="mb-8">
                 <div class="text-lg font-bold mb-4 pb-2 border-b">
@@ -136,6 +157,16 @@
                                 </div>
                             </div>
 
+                            <!-- 扩展题得分 -->
+                            <div class="flex justify-between items-center">
+                                <div class="font-medium">扩展题</div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xl font-bold">{{ scoreDetails.expand }}</span>
+                                    <span class="text-gray-500">/ {{ expandQuestions.length * questionScores.expand
+                                        }}</span>
+                                </div>
+                            </div>
+
                             <!-- 判断题得分 -->
                             <div class="flex justify-between items-center">
                                 <div class="font-medium">判断题</div>
@@ -190,6 +221,34 @@
                             <h3 class="text-lg font-bold mb-4">选择题</h3>
                             <div class="space-y-4">
                                 <div v-for="(question, index) in choiceQuestions" :key="question.id"
+                                    class="p-4 rounded-lg"
+                                    :class="isAnswerCorrect('choice', question) ? 'dark:bg-green-900/20' : 'dark:bg-red-900/20'">
+                                    <div class="flex items-start justify-between">
+                                        <div>
+                                            <div class="font-medium mb-2">
+                                                {{ index + 1 }}. {{ question.title }}
+                                            </div>
+                                            <div class="text-sm dark:text-gray-400">
+                                                您的答案：{{ getAnswerDisplay('choice', question) }}
+                                            </div>
+                                            <div class="text-sm"
+                                                :class="isAnswerCorrect('choice', question) ? 'text-green-500' : 'text-red-500'">
+                                                正确答案：{{ getCorrectAnswerDisplay(question) }}
+                                            </div>
+                                        </div>
+                                        <n-tag :type="isAnswerCorrect('choice', question) ? 'success' : 'error'">
+                                            {{ isAnswerCorrect('choice', question) ? '正确' : '错误' }}
+                                        </n-tag>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 扩展题详情 -->
+                        <div v-if="expandQuestions.length">
+                            <h3 class="text-lg font-bold mb-4">选择题</h3>
+                            <div class="space-y-4">
+                                <div v-for="(question, index) in expandQuestions" :key="question.id"
                                     class="p-4 rounded-lg"
                                     :class="isAnswerCorrect('choice', question) ? 'dark:bg-green-900/20' : 'dark:bg-red-900/20'">
                                     <div class="flex items-start justify-between">
@@ -358,6 +417,7 @@ const judgmentFormRef = ref<FormInst | null>(null)
 const multipleFormRef = ref<FormInst | null>(null)
 const essayFormRef = ref<FormInst | null>(null)
 const fillFormRef = ref<FormInst | null>(null)
+const expandFormRef = ref<FormInst | null>(null)
 
 // 修改答案类型定义
 interface Answers {
@@ -366,6 +426,7 @@ interface Answers {
     judgment: Record<string, string>
     essay: Record<string, string>
     fill: Record<string, string>
+    expand: Record<string, string>
 }
 
 // 初始化答案对象，按题型分类
@@ -374,7 +435,8 @@ const answers = ref<Answers>({
     multiple: {},
     judgment: {},
     essay: {},
-    fill: {}
+    fill: {},
+    expand: {}
 })
 
 // 随机抽取考试题目
@@ -391,6 +453,18 @@ const submitting = ref(false)
 const choiceRules = computed(() => {
     const rules: Record<string, any> = {}
     choiceQuestions.value.forEach(q => {
+        rules[`q${q.id}`] = {
+            required: true,
+            message: '请选择答案',
+            trigger: ['blur', 'change']
+        }
+    })
+    return rules
+})
+
+const expandRules = computed(() => {
+    const rules: Record<string, any> = {}
+    expandQuestions.value.forEach(q => {
         rules[`q${q.id}`] = {
             required: true,
             message: '请选择答案',
@@ -475,7 +549,8 @@ const scoreDetails = ref({
     judgment: 0,
     multiple: 0,
     essay: 0,
-    fill: 0
+    fill: 0,
+    expand: 0
 })
 
 // 计算得分详情
@@ -485,7 +560,8 @@ const calculateScoreDetails = () => {
         multiple: 0,
         judgment: 0,
         essay: 0,
-        fill: 0
+        fill: 0,
+        expand: 0,
     }
 
     examQuestions.value.forEach(question => {
@@ -499,6 +575,12 @@ const calculateScoreDetails = () => {
             case 'choice':
                 if (answer === question.answer) {
                     details.choice += questionScores.value.choice
+                }
+                break
+
+            case 'expand':
+                if (answer === question.answer) {
+                    details.expand += questionScores.value.expand
                 }
                 break
 
@@ -556,6 +638,7 @@ const handleSubmit = async () => {
     try {
         const validations = await Promise.all([
             choiceFormRef.value?.validate(),
+            expandFormRef.value?.validate(),
             judgmentFormRef.value?.validate(),
             multipleFormRef.value?.validate(),
             essayFormRef.value?.validate(),
@@ -596,6 +679,10 @@ const choiceQuestions = computed(() =>
     examQuestions.value.filter(q => q.type === 'choice')
 )
 
+const expandQuestions = computed(() =>
+    examQuestions.value.filter(q => q.type === 'expand')
+)
+
 const judgmentQuestions = computed(() =>
     examQuestions.value.filter(q => q.type === 'judgment')
 )
@@ -616,6 +703,9 @@ onMounted(async () => {
     try {
         await dataManager.init()
         examQuestions.value = getRandomQuestions(dataManager.getQuestions())
+
+        console.log('题目加载成功')
+        console.log(`选择题：${choiceQuestions.value.length} 道，扩展题：${expandQuestions.value.length} 道，判断题：${judgmentQuestions.value.length} 道，多选题：${multipleQuestions.value.length} 道，简答题：${essayQuestions.value.length} 道，填空题：${fillQuestions.value.length} 道`)
     } catch (error) {
         message.error('题目加载失败')
     }
@@ -628,6 +718,7 @@ const isAnswerCorrect = (type: keyof Answers, question: Question) => {
 
     switch (type) {
         case 'choice':
+        case 'expand':
         case 'judgment':
             return answer === question.answer
         case 'multiple':

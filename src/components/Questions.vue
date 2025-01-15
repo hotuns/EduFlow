@@ -76,7 +76,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { dataManager } from '../datas'
-import type { Question, Option, QuestionType } from '../datas' // 导入类型定义
+import type { Question, QuestionType } from '../datas' // 导入类型定义
 
 // 题型选项
 const typeOptions = [
@@ -84,7 +84,8 @@ const typeOptions = [
     { label: '多选题', value: 'multiple' },
     { label: '判断题', value: 'judgment' },
     { label: '简答题', value: 'essay' },
-    { label: '填空题', value: 'fill' }
+    { label: '填空题', value: 'fill' },
+    { label: '扩展题', value: 'expand' }
 ]
 
 // 当前选中的题型，默认单选题
@@ -117,7 +118,8 @@ const getQuestionType = (type: string) => {
         'judgment': '判断题',
         'essay': '简答题',
         'multiple': '多选题',
-        'fill': '填空题'
+        'fill': '填空题',
+        'expand': '扩展题'
     }
     return typeMap[type as keyof typeof typeMap] || '未知类型'
 }
