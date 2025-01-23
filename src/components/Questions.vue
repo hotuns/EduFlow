@@ -39,7 +39,8 @@
                 <div class="mb-2">{{ currentQuestion.title }}</div>
 
                 <!-- 选项显示部分 -->
-                <template v-if="currentQuestion.type === 'choice' || currentQuestion.type === 'multiple'">
+                <template
+                    v-if="currentQuestion.type === 'choice' || currentQuestion.type === 'expand' || currentQuestion.type === 'multiple'">
                     <div v-for="option in currentQuestion.options" :key="option.value" class="ml-4 mb-1">
                         {{ option.label }}. {{ option.value }}
                     </div>
@@ -56,6 +57,9 @@
                 <div v-if="showAnswer" class="mt-4">
                     <div class="font-bold mb-2">正确答案：</div>
                     <div v-if="currentQuestion.type === 'choice'" class="ml-4">
+                        {{ getAnswerLabel(currentQuestion) }}
+                    </div>
+                    <div v-else-if="currentQuestion.type === 'expand'" class="ml-4">
                         {{ getAnswerLabel(currentQuestion) }}
                     </div>
                     <div v-else-if="currentQuestion.type === 'multiple'" class="ml-4">
@@ -126,7 +130,8 @@ const getQuestionType = (type: string) => {
 
 // 获取选择题答案的选项文本
 const getAnswerLabel = (question: Question) => {
-    if (question.type !== 'choice' || !question.options) return ''
+    if (question.type !== 'choice' && question.type !== 'expand') return ''
+    if (!question.options) return ''
 
     // 先找到答案对应的选项
     const answerOption = question.options.find(opt => opt.label === question.answer)

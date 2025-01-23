@@ -569,8 +569,6 @@ const calculateScoreDetails = () => {
         const answer = type_answer[`q${question.id}`]
         if (answer === undefined) return
 
-        console.log(question.type, answer, question.answer)
-
         switch (question.type) {
             case 'choice':
                 if (answer === question.answer) {
@@ -588,25 +586,12 @@ const calculateScoreDetails = () => {
                 const userAnswers = new Set(answer as string[])
                 const correctAnswers = new Set(question.answer?.split(','))
 
-                // 如果选择了错误选项，得0分
-                const hasWrongAnswer = Array.from(userAnswers).some(a => !correctAnswers.has(a))
-                if (hasWrongAnswer) {
-                    break
-                }
-
-                // 计算正确答案的比例
-                const correctCount = userAnswers.size
-                const totalCorrect = correctAnswers.size
-
-                if (correctCount === totalCorrect) {
-                    // 全部正确，得满分
+                // 检查答案是否完全一致:
+                // 1. 用户选择的数量要等于正确答案的数量
+                // 2. 每个选项都必须是正确的
+                if (userAnswers.size === correctAnswers.size &&
+                    Array.from(userAnswers).every(a => correctAnswers.has(a))) {
                     details.multiple += questionScores.value.multiple
-                } else {
-                    // 部分正确，按比例得分
-                    const ratio = correctCount / totalCorrect
-                    const score = Math.floor(questionScores.value.multiple * ratio)
-                    // 确保至少得1分
-                    details.multiple += Math.max(1, score)
                 }
                 break
 
@@ -633,6 +618,9 @@ const calculateScoreDetails = () => {
     return details
 }
 
+// 添加考试状态
+const examSubmitted = ref(false)
+
 // 提交处理
 const handleSubmit = async () => {
     try {
@@ -658,6 +646,7 @@ const handleSubmit = async () => {
                 userStore.saveExamResult(currentUser.value!.name, examScore.value)
 
                 // 显示得分详情弹窗
+                examSubmitted.value = true  // 标记考试已提交
                 showScoreModal.value = true
             } finally {
                 submitting.value = false
@@ -667,6 +656,11 @@ const handleSubmit = async () => {
         message.error('请完成所有题目')
     }
 }
+
+// 导出考试状态供路由守卫使用
+defineExpose({
+    examSubmitted
+})
 
 const router = useRouter()
 const handleNext = () => {
