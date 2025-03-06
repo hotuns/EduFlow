@@ -748,6 +748,49 @@ const getEssayScore = (question: Question) => {
     if (!answer || !question.keywords) return 0
     return calculateEssayScore(answer, question.keywords)
 }
+
+// 添加beforeunload事件处理
+const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    if (!examSubmitted.value) {
+        e.preventDefault()
+        e.returnValue = ''
+    }
+}
+
+// 添加路由离开确认
+const handleRouteLeave = (e: any) => {
+    if (!examSubmitted.value) {
+        if (window.confirm('考试尚未提交，确定要离开吗？离开后答题记录将丢失。')) {
+            return true
+        }
+        e.preventDefault()
+        return false
+    }
+}
+
+const props = defineProps<{
+    showConfirmDialog?: () => Promise<boolean>
+}>()
+// 修改路由离开监听
+onMounted(() => {
+    router.beforeEach(async (to, from, next) => {
+        if (from.name === 'exam' && !examSubmitted.value) {
+            const confirmed = await props.showConfirmDialog?.()
+            if (confirmed) {
+                next()
+            } else {
+                next(false)
+            }
+        } else {
+            next()
+        }
+    })
+})
+
+onBeforeUnmount(() => {
+    // 移除事件监听
+    window.removeEventListener('beforeunload', handleBeforeUnload)
+})
 </script>
 
 <style scoped>
