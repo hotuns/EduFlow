@@ -29,9 +29,8 @@
             <!-- 视频标题 -->
             <div class="">
                 <!-- {{ currentVideoData?.title }} -->
-                  {{ videoUrl }}
+                  实际路径：{{ videoUrl }}
             </div>
-            {{currentTime}}
             <!-- 视频播放器容器 -->
             <div class="relative flex-1">
                 <video ref="videoRef" class="w-full h-full bg-gray-800 rounded-lg" @timeupdate="handleTimeUpdate"

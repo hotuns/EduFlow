@@ -19,12 +19,12 @@
                     <div class="feature-card cursor-pointer" @click="goToLearn">
                         <div class="i-carbon-video text-3xl text-emerald-400 mb-2"></div>
                         <h3>视频学习</h3>
-                        <p>专业的教学视频</p>
+                        <p>专业教学视频</p>
                     </div>
                     <div class="feature-card cursor-pointer" @click="goToExam">
                         <div class="i-carbon-exam-mode text-3xl text-emerald-400 mb-2"></div>
-                        <h3>真题考试</h3>
-                        <p>全面的知识测评</p>
+                        <h3>真题学习</h3>
+                        <p>经典真题练习</p>
                     </div>
                 </div>
 
@@ -40,12 +40,11 @@ import bgGif from '../assets/ZY500.gif?url'
 const router = useRouter()
 
 const goToLearn = () => {
-    router.push({ name: 'learn' })
+    router.push({ name: 'learn', query: { tab: 'video' } })
 }
 
-// 添加考试页面跳转方法
 const goToExam = () => {
-    router.push({ name: 'exam' })
+    router.push({ name: 'learn', query: { tab: 'questions' } })
 }
 </script>
 
