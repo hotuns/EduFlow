@@ -24,35 +24,84 @@
         <!-- 题目内容 -->
         <n-card v-if="currentQuestion" class="question-card">
             <template #header>
-                <div class="flex items-center justify-between">
-                    <span class="text-lg font-bold">
-                        {{ getQuestionType(currentQuestion.type) }}
-                    </span>
-                    <n-tag :type="showAnswer ? 'success' : 'warning'">
-                        {{ showAnswer ? '答案已显示' : '答案已隐藏' }}
-                    </n-tag>
-                </div>
-            </template>
+                    <div class="flex items-center justify-between">
+                        <span class="text-lg font-bold">
+                            {{ getQuestionType(currentQuestion.type) }}
+                        </span>
+                        <n-tag :type="answered ? (isCorrect ? 'success' : 'error') : 'warning'">
+                            {{ getStatusText() }}
+                        </n-tag>
+                    </div>
+                </template>
 
             <!-- 题目 -->
             <div class="question-content mb-4">
-                <div class="mb-2">{{ currentQuestion.title }}</div>
+                    <div class="mb-2">{{ currentQuestion.title }}</div>
 
-                <!-- 选项显示部分 -->
-                <template
-                    v-if="currentQuestion.type === 'choice' || currentQuestion.type === 'expand' || currentQuestion.type === 'multiple'">
-                    <div v-for="option in currentQuestion.options" :key="option.value" class="ml-4 mb-1">
-                        {{ option.label }}. {{ option.value }}
-                    </div>
-                </template>
-            </div>
+                    <!-- 选项显示部分 -->
+                    <template v-if="currentQuestion.type === 'choice' || currentQuestion.type === 'expand'">
+                        <n-radio-group v-model:value="userAnswer" class="ml-4">
+                            <n-space vertical>
+                                <n-radio v-for="option in currentQuestion.options" 
+                                    :key="option.label" 
+                                    :value="option.label"
+                                    :disabled="answered">
+                                    {{ option.label }}. {{ option.value }}
+                                </n-radio>
+                            </n-space>
+                        </n-radio-group>
+                    </template>
+
+                    <template v-else-if="currentQuestion.type === 'multiple'">
+                        <n-checkbox-group v-model:value="userAnswer" class="ml-4">
+                            <n-space vertical>
+                                <n-checkbox v-for="option in currentQuestion.options"
+                                    :key="option.label"
+                                    :value="option.label"
+                                    :disabled="answered">
+                                    {{ option.label }}. {{ option.value }}
+                                </n-checkbox>
+                            </n-space>
+                        </n-checkbox-group>
+                    </template>
+
+                    <template v-else-if="currentQuestion.type === 'judgment'">
+                        <n-radio-group v-model:value="userAnswer" class="ml-4">
+                            <n-space>
+                                <n-radio value="true" :disabled="answered">正确</n-radio>
+                                <n-radio value="false" :disabled="answered">错误</n-radio>
+                            </n-space>
+                        </n-radio-group>
+                    </template>
+
+                    <template v-else>
+                        <n-input v-model:value="userAnswer" 
+                            type="textarea" 
+                            placeholder="请输入你的答案"
+                            :disabled="answered"
+                            class="mt-4" />
+                    </template>
+                </div>
 
             <!-- 答案区域 -->
             <n-divider />
             <div class="answer-section">
-                <n-button type="primary" @click="toggleAnswer">
-                    {{ showAnswer ? '隐藏答案' : '查看答案' }}
-                </n-button>
+                <n-space justify="center">
+                    <!-- 添加提交按钮 -->
+                    <n-button v-if="!answered" type="primary" @click="submitAnswer" :disabled="!userAnswer">
+                        提交答案
+                    </n-button>
+                    <n-button :type="showAnswer ? 'default' : 'info'" @click="toggleAnswer">
+                        {{ showAnswer ? '隐藏答案' : '查看答案' }}
+                    </n-button>
+                </n-space>
+
+                <!-- 添加答题反馈 -->
+                <div v-if="answered" class="mt-4 mb-4">
+                    <n-alert :type="isCorrect ? 'success' : 'error'">
+                        {{ isCorrect ? '回答正确！' : '回答错误，请查看正确答案' }}
+                    </n-alert>
+                </div>
 
                 <div v-if="showAnswer" class="mt-4">
                     <div class="font-bold mb-2">正确答案：</div>
@@ -82,6 +131,43 @@ import { ref, computed, watch } from 'vue'
 import { dataManager } from '../datas'
 import type { Question, QuestionType } from '../datas' // 导入类型定义
 
+
+// 新增状态
+const userAnswer = ref('')
+const answered = ref(false)
+const isCorrect = ref(false)
+// 检查答案是否正确
+const checkAnswer = () => {
+    if (currentQuestion.value.type === 'multiple') {
+        const sortedUserAnswer = (userAnswer.value as string[]).sort().join(',')
+        const sortedCorrectAnswer = currentQuestion.value.answer.split(',').sort().join(',')
+        return sortedUserAnswer === sortedCorrectAnswer
+    }
+    return userAnswer.value === currentQuestion.value.answer
+}
+
+// 提交答案
+const submitAnswer = () => {
+    isCorrect.value = checkAnswer()
+    answered.value = true
+}
+
+// 获取状态文本
+const getStatusText = () => {
+    if (!answered.value) return '未作答'
+    return isCorrect.value ? '回答正确' : '回答错误'
+}
+
+// 重置答题状态
+const resetAnswer = () => {
+    userAnswer.value = currentQuestion.value.type === 'multiple' ? [] : ''
+    answered.value = false
+    isCorrect.value = false
+    showAnswer.value = false
+}
+
+
+
 // 题型选项
 const typeOptions = [
     { label: '单选题', value: 'choice' },
@@ -106,14 +192,13 @@ const filteredQuestions = computed(() => {
 const currentIndex = ref(0)
 const showAnswer = ref(false)
 
+// 监听题目变化时重置状态
+watch([selectedType, currentIndex], () => {
+    resetAnswer()
+})
+
 // 当前题目
 const currentQuestion = computed(() => filteredQuestions.value[currentIndex.value])
-
-// 监听题型变化，重置当前索引和答案显示状态
-watch(selectedType, () => {
-    currentIndex.value = 0
-    showAnswer.value = false
-})
 
 // 获取题目类型显示文本
 const getQuestionType = (type: string) => {
