@@ -88,16 +88,17 @@ const formValue = ref({
     password: ''
 })
 
+// 修改验证规则，减少验证频率
 const rules = {
     username: {
         required: true,
         message: '请输入用户名',
-        trigger: ['blur', 'input']
+        trigger: ['blur'] // 移除 input 触发器，只在失焦时验证
     },
     password: {
         required: true,
         message: '请输入密码',
-        trigger: ['blur', 'input']
+        trigger: ['blur'] // 移除 input 触发器，只在失焦时验证
     }
 }
 
