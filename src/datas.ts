@@ -15,7 +15,7 @@ export interface Video {
 }
 
 // 定义题目类型
-export type QuestionType = 'choice' | 'multiple' | 'judgment' | 'essay' | 'fill'
+export type QuestionType = 'choice' | 'multiple' | 'judgment' | 'essay' | 'fill' | 'expand'
 
 // 选择题选项接口
 export interface Option {
@@ -30,7 +30,7 @@ export interface Question {
     title: string
     options?: Option[]  // 选择题选项
     answer?: string      // 选择题和判断题的答案
-    keywords?: string[]  // 阐述题的关键词
+    keywords?: string[]  // 简答题的关键词
     score?: number      // 分值会在代码中设置
 }
 
@@ -41,6 +41,7 @@ export interface QuestionBank {
     judgment: Question[]
     essay: Question[]
     fill: Question[]
+    expand: Question[]
 }
 
 // 从题库中随机抽取指定数量的题目
@@ -61,9 +62,11 @@ export const getRandomQuestions = (questionBank: QuestionBank): Question[] => {
     // 随机抽取题目
     const selectedQuestions = [
         ...shuffle([...questionBank.choice]).slice(0, questionCounts.choice),
+        ...shuffle([...questionBank.expand]).slice(0, questionCounts.expand),
         ...shuffle([...questionBank.multiple]).slice(0, questionCounts.multiple),
         ...shuffle([...questionBank.judgment]).slice(0, questionCounts.judgment),
-        ...shuffle([...questionBank.essay]).slice(0, questionCounts.essay)
+        ...shuffle([...questionBank.essay]).slice(0, questionCounts.essay),
+        ...shuffle([...questionBank.fill]).slice(0, questionCounts.fill),
     ]
 
     // 设置分值
@@ -87,7 +90,8 @@ class DataManager {
         multiple: [],
         judgment: [],
         essay: [],
-        fill: []
+        fill: [],
+        expand: []
     }
     private dataPath: string = ''
     private initialized = false
@@ -107,33 +111,30 @@ class DataManager {
             console.log('Checking data files in:', dataPath)
 
             // 读取各类型题目
-            const files = ['choice.xls', 'multiple.xls', 'judgment.xls', 'essay.xls']
+            const files = ['choice.xls', 'multiple.xls', 'judgment.xls', 'essay.xls', 'fill.xls', 'expand.xls']
             for (const file of files) {
                 const exists = await window.ipcRenderer.invoke('check-file-exists', file)
                 console.log(`File ${file} exists:`, exists)
             }
 
-            const [choiceData, multipleData, judgmentData, essayData] = await Promise.all([
+            const [choiceData, multipleData, judgmentData, essayData, fillData, expandData] = await Promise.all([
                 this.loadExcel('choice.xls'),
                 this.loadExcel('multiple.xls'),
                 this.loadExcel('judgment.xls'),
-                this.loadExcel('essay.xls')
+                this.loadExcel('essay.xls'),
+                this.loadExcel('fill.xls'),  // 加载填空题数据
+                this.loadExcel('expand.xls') // 加载扩展题
             ])
 
             // 转换Excel数据为题目格式
             this.questionBank.choice = this.transformChoiceQuestions(choiceData)
+            this.questionBank.expand = this.transformExpandQuestions(expandData)
             this.questionBank.multiple = this.transformMultipleQuestions(multipleData)
             this.questionBank.judgment = this.transformJudgmentQuestions(judgmentData)
             this.questionBank.essay = this.transformEssayQuestions(essayData)
-            // 从选择题数据源转换填空题
-            this.questionBank.fill = this.transformFillQuestions(choiceData)
+            this.questionBank.fill = this.transformFillQuestions(fillData)
 
             this.initialized = true
-            console.log('Data initialized successfully')
-            console.log('choiceQuestions', this.questionBank.choice)
-            console.log('multipleQuestions', this.questionBank.multiple)
-            console.log('judgmentQuestions', this.questionBank.judgment)
-            console.log('essayQuestions', this.questionBank.essay)
         } catch (error) {
             console.error('Failed to initialize data:', error)
             throw error
@@ -178,6 +179,23 @@ class DataManager {
             }))
     }
 
+    // 转换扩展题数据
+    private transformExpandQuestions(data: any[]): Question[] {
+        return data.filter(item => item.title && item.optionA && item.optionB)  // 确保必要字段存在
+            .map((item, index) => ({
+                id: index + 1,
+                type: 'expand',
+                title: String(item.title).trim(),
+                options: [
+                    { label: 'A', value: String(item.optionA || '').trim() },
+                    { label: 'B', value: String(item.optionB || '').trim() },
+                    { label: 'C', value: String(item.optionC || '').trim() },
+                    { label: 'D', value: String(item.optionD || '').trim() }
+                ].filter(opt => opt.value), // 移除空选项
+                answer: String(item.answer || '').trim().toUpperCase()
+            }))
+    }
+
     // 转换判断题数据
     private transformJudgmentQuestions(data: any[]): Question[] {
         return data.filter(item => item.title && item.answer)  // 确保必要字段存在
@@ -204,7 +222,7 @@ class DataManager {
             }))
     }
 
-    // 新增多选题数据转换方法
+    // 多选题数据转换方法
     private transformMultipleQuestions(data: any[]): Question[] {
         return data.filter(item => item.title && item.options)  // 确保必要字段存在
             .map((item, index) => {
@@ -231,40 +249,15 @@ class DataManager {
             })
     }
 
-    // 修改转换填空题数据方法
+    // 转换填空题数据方法
     private transformFillQuestions(data: any[]): Question[] {
-        return data.filter(item => item.title && item.answer && item.optionA)  // 确保必要字段存在
-            .map((item, index) => {
-                // 移除题目中括号内的内容作为填空
-                const title = String(item.title).trim().replace(/\[.*?\]/g, '____')
-                
-                // 根据选项标签（如'A'）找到对应的选项内容作为答案
-                const answerLabel = String(item.answer || '').trim().toUpperCase()
-                let answer = ''
-                
-                switch(answerLabel) {
-                    case 'A':
-                        answer = String(item.optionA || '').trim()
-                        break
-                    case 'B':
-                        answer = String(item.optionB || '').trim()
-                        break
-                    case 'C':
-                        answer = String(item.optionC || '').trim()
-                        break
-                    case 'D':
-                        answer = String(item.optionD || '').trim()
-                        break
-                }
-
-                return {
-                    id: index + 1,
-                    type: 'fill',
-                    title,
-                    answer
-                }
-            })
-            .filter(item => item.answer) // 过滤掉没有找到答案的题目
+        return data.filter(item => item.title && item.answer)  // 确保必要字段存在
+            .map((item, index) => ({
+                id: index + 1,
+                type: 'fill',
+                title: String(item.title).trim(),
+                answer: String(item.answer).trim().toLowerCase()
+            }))
     }
 
     // 获取所有视频（扁平化）

@@ -26,8 +26,9 @@ export const QUESTION_SCORES = {
     choice: 3,     // 单选题
     multiple: 5,   // 多选题
     judgment: 2,   // 判断题
-    essay: 15,     // 阐述题
-    fill: 2        // 填空题
+    essay: 15,     // 简答题
+    fill: 2,        // 填空题
+    expand: 10     // 拓展题
 }
 
 // 定义抽题数量
@@ -35,8 +36,9 @@ export const QUESTION_COUNTS = {
     choice: 10,    // 个单选题
     multiple: 4,   // 个多选题
     judgment: 10,  // 个判断题
-    essay: 2,      // 个阐述题
-    fill: 5        // 个填空题
+    essay: 2,      // 个简答题
+    fill: 5,       // 个填空题
+    expand: 5      // 个拓展题
 }
 
 // Store 状态接口
@@ -75,8 +77,8 @@ export const useUserStore = defineStore('user', {
         currentUser: electronStore.get('currentUser') as User | null,
         collapsed: electronStore.get('collapsed') as boolean || false,
         theme: electronStore.get('theme') as 'light' | 'dark' || 'dark',
-        questionScores: electronStore.get('questionScores') as any ||  QUESTION_SCORES,
-        questionCounts:electronStore.get('questionCounts') as any || QUESTION_COUNTS
+        questionScores: electronStore.get('questionScores') as any || QUESTION_SCORES,
+        questionCounts: electronStore.get('questionCounts') as any || QUESTION_COUNTS
     }),
 
     getters: {
