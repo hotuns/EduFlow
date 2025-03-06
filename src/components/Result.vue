@@ -58,22 +58,6 @@
                     </div>
                 </div>
 
-                <!-- 学习情况 -->
-                <div class="mb-12">
-                    <h3 class="text-lg font-bold mb-4 flex items-center dark:text-gray-200">
-                        学习完成情况
-                    </h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div v-for="video in videos" :key="video.id"
-                            class="flex items-center p-3 dark:bg-gray-700/30 rounded">
-                            <n-icon class="text-emerald-400 mr-2">
-                                <div class="i-carbon-checkmark-filled"></div>
-                            </n-icon>
-                            <div class="text-sm dark:text-gray-300">{{ video.title }}</div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- 签章区域 -->
                 <div class="flex justify-between items-end mt-12">
                     <div class="dark:text-gray-400 text-sm">
@@ -95,7 +79,6 @@ import { useUserStore } from '../store'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
 import { storeToRefs } from 'pinia'
-import { dataManager } from '../datas'
 
 const userStore = useUserStore()
 const { currentUser } = storeToRefs(userStore)
@@ -111,9 +94,6 @@ const exporting = ref(false)
 const message = useMessage()
 const emit = defineEmits(['restart'])
 const showConfirm = ref(false)
-
-// 获取视频列表
-const videos = computed(() => dataManager.getVideos())
 
 // 生成证书编号
 const certificateNo = computed(() => {
@@ -185,11 +165,6 @@ const exportAsPDF = async () => {
     } finally {
         exporting.value = false
     }
-}
-
-// 处理重新开始
-const handleRestart = () => {
-    showConfirm.value = true
 }
 
 // 确认重新开始

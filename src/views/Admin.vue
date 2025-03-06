@@ -103,19 +103,29 @@ const columns: DataTableColumns<User> = [
         }
     },
     {
+        title: '历史考试成绩',
+        key: 'examRecords',
+        render(row) {
+            if (!row.examRecords || row.examRecords.length === 0) {
+                return '无历史记录'
+            }
+            
+            return h(NSpace, { vertical: true }, {
+                default: () => row.examRecords?.map((record, index) => {
+                    const type = record.score >= 60 ? 'success' : 'error'
+                    return h(NTag, { type, style: 'margin-bottom: 4px' }, { 
+                        default: () => `${record.score}分 (${new Date(record.time).toLocaleString()})` 
+                    })
+                })
+            })
+        }
+    },
+    {
         title: '操作',
         key: 'actions',
         render(row) {
             return h(NSpace, {}, {
                 default: () => [
-                    h(
-                        NButton,
-                        {
-                            size: 'small',
-                            onClick: () => handleViewHistory(row)
-                        },
-                        { default: () => '查看历史成绩' }
-                    ),
                     h(
                         NButton,
                         {
@@ -191,11 +201,6 @@ const clearStore = () => {
     })
 }
 
-// 查看历史成绩
-const handleViewHistory = (user: User) => {
-    selectedUserRecords.value = user.examRecords || []
-    showHistoryModal.value = true
-}
 
 // 题目设置
 const questionSettings = ref({

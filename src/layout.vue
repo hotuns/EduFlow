@@ -1,27 +1,62 @@
 <template>
-    <n-layout has-sider class="h-screen">
-        <n-layout-sider bordered collapse-mode="width" :collapsed-width="50" :width="180" :collapsed="collapsed"
-            show-trigger @collapse="collapsed = true" @expand="collapsed = false">
+    <n-layout class="h-screen">
+        <!-- 标题栏（类似窗口标题栏） -->
+        <n-layout-header class="h-10 flex items-center px-4 bg-gradient-to-r from-emerald-500 to-emerald-600">
+            <div class="flex items-center gap-2 text-white">
+                <div class="i-carbon-drone text-lg"></div>
+                <span class="text-sm font-medium">无人机培训系统</span>
+            </div>
+        </n-layout-header>
 
-            <n-menu :options="menuOptions" :value="defaultSelectedKey" />
+        <!-- 工具栏（包含主要功能按钮） -->
+        <n-layout-header bordered class="h-16 px-4 bg-gray-50">
+            <div class="h-full flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <n-button-group>
+                        <n-button @click="router.push({ name: 'home' })" :type="route.name === 'home' ? 'primary' : 'default'">
+                            <template #icon><div class="i-carbon-home"></div></template>
+                            首页
+                        </n-button>
+                        <n-button @click="router.push({ name: 'learn' })" :type="route.name === 'learn' ? 'primary' : 'default'">
+                            <template #icon><div class="i-carbon-video"></div></template>
+                            学习培训
+                        </n-button>
+                        <n-button @click="router.push({ name: 'exam' })" :type="route.name === 'exam' ? 'primary' : 'default'">
+                            <template #icon><div class="i-carbon-exam-mode"></div></template>
+                            模拟考试
+                        </n-button>
+                        <n-button @click="router.push({ name: 'user' })" :type="route.name === 'user' ? 'primary' : 'default'">
+                            <template #icon><div class="i-carbon-certificate"></div></template>
+                            成绩证书
+                        </n-button>
+                        <n-button v-if="currentUser?.type === 'admin'" @click="router.push({ name: 'admin' })" 
+                            :type="route.name === 'admin' ? 'primary' : 'default'">
+                            <template #icon><div class="i-carbon-settings"></div></template>
+                            管理员
+                        </n-button>
+                    </n-button-group>
+                </div>
 
-            <!-- 用户信息和退出按钮 -->
-            <div v-if="currentUser" class="absolute bottom-0 left-0 right-0 p-4 border-t bg-white dark:bg-black">
-                <div class="flex items-center justify-between">
-                    <span class="text-sm" v-show="!collapsed">{{ currentUser.name }}</span>
-
-                    <!-- <div class="i-carbon-sun dark:i-carbon-moon" @click="userStore.toggleTheme"></div> -->
-
-                    <n-button text type="error" @click="handleLogout">
+                <!-- 用户信息 -->
+                <div v-if="currentUser" class="flex items-center gap-3">
+                    <n-badge>
+                        <n-avatar round size="small">{{ currentUser.name[0] }}</n-avatar>
+                    </n-badge>
+                    <span class="text-sm text-gray-600">{{ currentUser.name }}</span>
+                    <n-button quaternary size="small" @click="handleLogout">
+                        <template #icon><div class="i-carbon-logout"></div></template>
                         退出
                     </n-button>
                 </div>
             </div>
-        </n-layout-sider>
+        </n-layout-header>
 
-        <n-layout class="p-4 ">
+        <!-- 主内容区域 -->
+        <n-layout-content class="p-4 bg-gray-100">
             <router-view />
-        </n-layout>
+        </n-layout-content>
+
+        <Login v-model="showLoginModal" />
     </n-layout>
 </template>
 
@@ -35,6 +70,12 @@ const userStore = useUserStore();
 const router = useRouter();
 const message = useMessage();
 const route = useRoute();
+
+const showLoginModal = ref(!userStore.currentUser)
+// 监听用户登录状态
+watch(() => userStore.currentUser, (newVal) => {
+    showLoginModal.value = !newVal
+})
 
 const defaultSelectedKey = computed(() => {
     return route.name as string
@@ -87,7 +128,22 @@ const handleLogout = () => {
 
 
 <style scoped>
-.n-layout-sider {
+:deep(.n-button) {
+    padding: 8px 16px;
+}
+
+:deep(.n-button-group .n-button:not(:last-child)) {
+    margin-right: 1px;
+}
+
+.n-layout-header {
     position: relative;
+    z-index: 1000;
+}
+
+.n-layout-content {
+    position: relative;
+    height: calc(100vh - 104px); /* 减去标题栏和工具栏的高度 */
+    overflow-y: auto;
 }
 </style>

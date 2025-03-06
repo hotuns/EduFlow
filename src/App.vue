@@ -1,10 +1,9 @@
 <template>
-  <n-config-provider :theme="theme">
+  <n-config-provider>
     <n-dialog-provider>
       <n-message-provider>
         <n-modal-provider>
-          <Layout v-if="userStore.currentUser" />
-          <Login v-else />
+          <Layout />
         </n-modal-provider>
       </n-message-provider>
     </n-dialog-provider>
@@ -13,15 +12,6 @@
 
 <script setup lang="ts">
 import Layout from './layout.vue';
-import { useUserStore } from './store';
-import { darkTheme } from 'naive-ui'
-
-
-const userStore = useUserStore();
-const theme = computed(() => {
-  return userStore.theme === 'dark' ? darkTheme : null
-})
-
 </script>
 
 

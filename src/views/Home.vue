@@ -16,26 +16,18 @@
                 </p>
 
                 <div class="features">
-                    <div class="feature-card">
+                    <div class="feature-card cursor-pointer" @click="goToLearn">
                         <div class="i-carbon-video text-3xl text-emerald-400 mb-2"></div>
                         <h3>视频学习</h3>
                         <p>专业的教学视频</p>
                     </div>
-                    <div class="feature-card">
+                    <div class="feature-card cursor-pointer" @click="goToExam">
                         <div class="i-carbon-exam-mode text-3xl text-emerald-400 mb-2"></div>
                         <h3>真题考试</h3>
                         <p>全面的知识测评</p>
                     </div>
                 </div>
 
-                <div class="mt-12">
-                    <n-button type="primary" size="large" @click="goToLearn">
-                        <template #icon>
-                            <div class="i-carbon-play-filled"></div>
-                        </template>
-                        开始学习
-                    </n-button>
-                </div>
             </div>
         </div>
     </div>
@@ -49,6 +41,11 @@ const router = useRouter()
 
 const goToLearn = () => {
     router.push({ name: 'learn' })
+}
+
+// 添加考试页面跳转方法
+const goToExam = () => {
+    router.push({ name: 'exam' })
 }
 </script>
 
@@ -70,7 +67,7 @@ const goToLearn = () => {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(17, 24, 39, 0.85);
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(4px);
 }
 
@@ -98,14 +95,14 @@ const goToLearn = () => {
 .title {
     font-size: 2.5rem;
     font-weight: bold;
-    color: #fff;
+    color: #1f2937;
     margin-bottom: 1rem;
     letter-spacing: 1px;
 }
 
 .subtitle {
     font-size: 1.2rem;
-    color: #9ca3af;
+    color: #4b5563;
     margin-bottom: 3rem;
 }
 
@@ -117,28 +114,31 @@ const goToLearn = () => {
 }
 
 .feature-card {
-    background: rgba(31, 41, 55, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(229, 231, 235, 1);
     padding: 1.5rem;
     border-radius: 12px;
     transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .feature-card:hover {
     transform: translateY(-5px);
-    background: rgba(31, 41, 55, 0.8);
-    border-color: rgba(52, 211, 153, 0.3);
+    background: rgba(255, 255, 255, 1);
+    border-color: rgba(16, 185, 129, 0.3);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
 }
 
 .feature-card h3 {
-    color: #fff;
+    color: #1f2937;
     font-size: 1.2rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
 }
 
 .feature-card p {
-    color: #9ca3af;
+    color: #4b5563;
     font-size: 0.9rem;
 }
 
@@ -154,14 +154,4 @@ const goToLearn = () => {
     }
 }
 
-/* 响应式设计 */
-@media (max-width: 640px) {
-    .title {
-        font-size: 2rem;
-    }
-
-    .features {
-        grid-template-columns: 1fr;
-    }
-}
 </style>
