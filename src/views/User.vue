@@ -188,14 +188,6 @@ const goToExam = () => {
 </script>
 
 <style scoped>
-:deep(.n-progress-graph) {
-    background-color: rgba(31, 41, 55, 0.5);
-}
-
-:deep(.n-progress-graph__fill) {
-    background-color: rgb(52, 211, 153);
-}
-
 :deep(.n-card) {
     transition: all 0.3s ease;
 }

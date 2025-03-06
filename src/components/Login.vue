@@ -12,6 +12,7 @@
                         <template #prefix>
                             <div class="i-carbon-user text-lg"></div>
                         </template>
+                        <template #password-invisible-icon></template>
                     </n-input>
                 </n-form-item>
 
@@ -53,8 +54,8 @@ const userStore = useUserStore()
 const formRef = ref<FormInst | null>(null)
 const loading = ref(false)
 
-// 控制登录框显示
-const showLogin = ref(true)
+// 检查是否已经登录
+const showLogin = ref(!userStore.currentUser)
 
 // 添加 props 和 emits
 const props = defineProps<{
@@ -72,6 +73,15 @@ watch(() => props.modelValue, (val) => {
 watch(showLogin, (val) => {
     emit('update:modelValue', val)
 })
+
+// 如果已登录，自动跳转
+if (userStore.currentUser) {
+    if (userStore.currentUser.type === 'admin') {
+        router.push('/admin')
+    } else {
+        router.push('/')
+    }
+}
 
 const formValue = ref({
     username: '',
