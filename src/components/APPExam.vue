@@ -757,39 +757,53 @@ const handleBeforeUnload = (e: BeforeUnloadEvent) => {
     }
 }
 
-// 添加路由离开确认
-const handleRouteLeave = (e: any) => {
+const dialog = useDialog()
+// 添加路由守卫处理方法
+const handleRouteLeave = async (next: any) => {
     if (!examSubmitted.value) {
-        if (window.confirm('考试尚未提交，确定要离开吗？离开后答题记录将丢失。')) {
-            return true
-        }
-        e.preventDefault()
-        return false
+        return new Promise((resolve) => {
+            dialog.warning({
+                title: '确认离开',
+                content: '考试尚未提交，确定要离开吗？离开后答题记录将丢失。',
+                positiveText: '确认离开',
+                negativeText: '取消',
+                onPositiveClick: () => {
+                    resolve(true)
+                    next()
+                },
+                onNegativeClick: () => {
+                    resolve(false)
+                    next(false)
+                },
+                onClose: () => {
+                    resolve(false)
+                    next(false)
+                }
+            })
+        })
     }
+    return true
 }
 
-const props = defineProps<{
-    showConfirmDialog?: () => Promise<boolean>
-}>()
-// 修改路由离开监听
+// 修改路由监听逻辑
 onMounted(() => {
-    router.beforeEach(async (to, from, next) => {
-        if (from.name === 'exam' && !examSubmitted.value) {
-            const confirmed = await props.showConfirmDialog?.()
-            if (confirmed) {
-                next()
-            } else {
-                next(false)
-            }
+    // 添加页面刷新/关闭提示
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    
+    // 注册全局路由守卫
+    const unregisterHook = router.beforeEach((to, from, next) => {
+        if (from.name === 'exam') {
+            handleRouteLeave(next)
         } else {
             next()
         }
     })
-})
 
-onBeforeUnmount(() => {
-    // 移除事件监听
-    window.removeEventListener('beforeunload', handleBeforeUnload)
+    // 组件卸载时清理路由守卫
+    onBeforeUnmount(() => {
+        unregisterHook()
+        window.removeEventListener('beforeunload', handleBeforeUnload)
+    })
 })
 </script>
 
