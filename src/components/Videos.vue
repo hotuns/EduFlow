@@ -27,11 +27,11 @@
         <!-- 视频播放区域 -->
         <div class="flex-1 flex flex-col space-y-4">
             <!-- 视频标题 -->
-            <div class="text-lg font-bold dark:text-gray-200">
+            <div class="">
                 <!-- {{ currentVideoData?.title }} -->
                   {{ videoUrl }}
             </div>
-
+            {{currentTime}}
             <!-- 视频播放器容器 -->
             <div class="relative flex-1">
                 <video ref="videoRef" class="w-full h-full bg-gray-800 rounded-lg" @timeupdate="handleTimeUpdate"
@@ -180,31 +180,34 @@ const playVideo = (videoId: number) => {
         videoRef.value.pause()
     }
     isPlaying.value = false
-    
 
     // 重置当前时间和进度
     currentTime.value = 0
     duration.value = 0
-    lastPosition.value = 0
-
     
-    
+    // 从上次播放位置恢复
+    if (state) {
+        lastPosition.value = state.lastPosition || 0
+        currentTime.value = lastPosition.value
+    } else {
+        lastPosition.value = 0
+    }
 
     // 更新视频 URL
     videoUrl.value // 确保 videoUrl 被计算
 
     nextTick(() => {
         if (videoRef.value) {
-            // 如果视频未完成，从上次位置继续播放
-            if (state && !state.completed) {
-                videoRef.value.currentTime = state.lastPosition
-            } else {
-                // 如果是新视频或已完成的视频，从头开始播放
-                videoRef.value.currentTime = 0
-            }
+            // 设置视频时间到上次播放位置
+            videoRef.value.currentTime = lastPosition.value
             // 设置倍速
             videoRef.value.playbackRate = playbackSpeed.value
             videoRef.value.load()
+            
+            // 如果进度超过95%，询问是否从头开始播放
+            if (lastPosition.value > 0 && !state?.completed) {
+                message.info(`上次观看到 ${formatTime(lastPosition.value)}，继续播放`)
+            }
         }
     })
 }
@@ -234,12 +237,63 @@ const handleTimeUpdate = () => {
     currentTime.value = videoRef.value.currentTime
     duration.value = videoRef.value.duration
 
-    // 只有未完成的视频才更新 lastPosition
+    // 更新最后播放位置并保存状态
     if (!isVideoCompleted(currentVideo.value)) {
         lastPosition.value = Math.max(lastPosition.value, currentTime.value)
-        saveVideoState(currentVideo.value, false, lastPosition.value)
+        // 每隔 1 秒保存一次进度
+        if (Math.floor(lastPosition.value) % 1 === 0) {
+            saveVideoState(currentVideo.value, false, lastPosition.value)
+        }
     }
 }
+
+// 在组件挂载时
+onMounted(async () => {
+    if (!videoRef.value) return
+
+    videoRef.value.addEventListener('play', () => {
+        isPlaying.value = true
+    })
+
+    videoRef.value.addEventListener('pause', () => {
+        isPlaying.value = false
+    })
+
+    videoRef.value.addEventListener('loadedmetadata', () => {
+        duration.value = videoRef.value?.duration || 0
+        // 设置倍速
+        videoRef.value!.playbackRate = playbackSpeed.value
+    })
+
+    // 找到第一个未完成的视频并从上次位置继续播放
+    const states = getVideoStates()
+    for (const video of dataManager.getVideos()) {
+        const state = states.get(video.id)
+        if (!state?.completed) {
+            currentVideo.value = video.id
+            if (state?.lastPosition) {
+                lastPosition.value = state.lastPosition
+                currentTime.value = lastPosition.value
+            }
+            break
+        }
+    }
+
+    // 获取数据目录路径
+    dataPath.value = dataManager.getDataPath()
+
+    try {
+        // 检查视频文件是否存在
+        const videoPath = path.join('videos', currentVideoData.value?.url || '')
+        const exists = await window.ipcRenderer.invoke('check-file-exists', videoPath)
+        if (!exists) {
+            message.error('视频文件不存在，请检查视频文件是否正确放置')
+            return
+        }
+    } catch (error) {
+        message.error('数据加载失败')
+    }
+})
 
 // 视频播放完成处理
 const handleVideoEnd = async () => {
@@ -257,7 +311,6 @@ const handleVideoEnd = async () => {
     }
 }
 
-// 添加新的状态
 const isPlaying = ref(false)
 const currentTime = ref(0)
 const duration = ref(0)
@@ -274,10 +327,21 @@ const togglePlay = async () => {
     if (!videoRef.value) return
     try {
         if (isPlaying.value) {
-            await videoRef.value.pause()
+            videoRef.value.pause()
         } else {
             // 设置默认音量
             videoRef.value.volume = 0.5
+            
+            const states = getVideoStates()
+            const state = states.get(currentVideo.value)
+            if (state?.lastPosition) {
+                videoRef.value.currentTime = state.lastPosition
+                // 等待进度设置完成
+                await new Promise(resolve => {
+                    videoRef.value!.addEventListener('seeked', resolve, { once: true })
+                })
+            }
+            // 开始播放
             await videoRef.value.play()
         }
     } catch (error) {
