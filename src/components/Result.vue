@@ -121,7 +121,7 @@ const exportAsPNG = async () => {
     try {
         const canvas = await html2canvas(resultRef.value, {
             scale: 2,
-            backgroundColor: '#1f2937'
+            useCORS: true,
         })
 
         // 创建下载链接
@@ -146,7 +146,7 @@ const exportAsPDF = async () => {
     try {
         const canvas = await html2canvas(resultRef.value, {
             scale: 2,
-            backgroundColor: '#1f2937'
+            useCORS: true
         })
 
         const imgData = canvas.toDataURL('image/png')
