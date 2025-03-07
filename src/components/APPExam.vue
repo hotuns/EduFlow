@@ -782,7 +782,7 @@ const handleRouteLeave = async (next: any) => {
             })
         })
     }
-    return true
+    return next()
 }
 
 // 修改路由监听逻辑
