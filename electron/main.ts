@@ -149,8 +149,8 @@ function createWindow() {
       contextIsolation: false,
       webSecurity: false,
     },
-    width: 1200,
-    height: 800,
+    width: 800,
+    height: 900,
   })
 
   // Test active push message to Renderer-process.
