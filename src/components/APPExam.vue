@@ -1,400 +1,451 @@
 <template>
-    <div class="w-full h-full flex flex-col space-y-6 p-4">
-        <!-- 考试信息 -->
-        <div class="flex justify-between items-center">
-            <h2 class="text-xl font-bold">考试题目</h2>
-            <div class="text-gray-400">
-                总分：{{ totalScore }} 分
-            </div>
-        </div>
-
-        <n-card>
-            <!-- 选择题部分 -->
-            <div class="mb-8">
-                <div class="text-lg font-bold mb-4 pb-2 border-b">
-                    选择题（每题{{ questionScores.choice }}分，共{{ choiceQuestions.length * questionScores.choice }}分）
-                </div>
-                <n-form ref="choiceFormRef" :model="answers.choice" :rules="choiceRules">
-                    <div v-for="(question, index) in choiceQuestions" :key="question.id" class="mb-8">
-                        <n-form-item :path="`q${question.id}`" :label="`${index + 1}. ${question.title}`">
-                            <n-radio-group v-model:value="answers.choice[`q${question.id}`]">
-                                <n-space vertical>
-                                    <n-radio v-for="option in question.options" :key="option.value"
-                                        :value="option.label">
-                                        {{ option.label }}. {{ option.value }}
-                                    </n-radio>
-                                </n-space>
-                            </n-radio-group>
-                        </n-form-item>
-                    </div>
-                </n-form>
-            </div>
-
-            <!--  扩展题部分 -->
-            <div class="mb-8">
-                <div class="text-lg font-bold mb-4 pb-2 border-b">
-                    扩展题（每题{{ questionScores.expand }}分，共{{ expandQuestions.length * questionScores.expand }}分）
-                </div>
-                <n-form ref="expandFormRef" :model="answers.expand" :rules="expandRules">
-                    <div v-for="(question, index) in expandQuestions" :key="question.id" class="mb-8">
-                        <n-form-item :path="`q${question.id}`" :label="`${index + 1}. ${question.title}`">
-                            <n-radio-group v-model:value="answers.expand[`q${question.id}`]">
-                                <n-space vertical>
-                                    <n-radio v-for="option in question.options" :key="option.value"
-                                        :value="option.label">
-                                        {{ option.label }}. {{ option.value }}
-                                    </n-radio>
-                                </n-space>
-                            </n-radio-group>
-                        </n-form-item>
-                    </div>
-                </n-form>
-            </div>
-
-            <!-- 判断题部分 -->
-            <div class="mb-8">
-                <div class="text-lg font-bold mb-4 pb-2 border-b">
-                    判断题（每题{{ questionScores.judgment }}分，共{{ judgmentQuestions.length * questionScores.judgment }}分）
-                </div>
-                <n-form ref="judgmentFormRef" :model="answers.judgment" :rules="judgmentRules">
-                    <div v-for="(question, index) in judgmentQuestions" :key="question.id" class="mb-8">
-                        <n-form-item :path="`q${question.id}`" :label="`${index + 1}. ${question.title}`">
-                            <n-radio-group v-model:value="answers.judgment[`q${question.id}`]">
-                                <n-space>
-                                    <n-radio value="true">正确</n-radio>
-                                    <n-radio value="false">错误</n-radio>
-                                </n-space>
-                            </n-radio-group>
-                        </n-form-item>
-                    </div>
-                </n-form>
-            </div>
-
-            <!-- 多选题部分 -->
-            <div class="mb-8">
-                <div class="text-lg font-bold mb-4 pb-2 border-b">
-                    多选题（每题{{ questionScores.multiple }}分，共{{ multipleQuestions.length * questionScores.multiple }}分）
-                </div>
-                <n-form ref="multipleFormRef" :model="answers.multiple" :rules="multipleRules">
-                    <div v-for="(question, index) in multipleQuestions" :key="question.id" class="mb-8">
-                        <n-form-item :path="`q${question.id}`" :label="`${index + 1}. ${question.title}`">
-                            <n-checkbox-group v-model:value="answers.multiple[`q${question.id}`]">
-                                <n-space vertical>
-                                    <n-checkbox v-for="option in question.options" :key="option.value"
-                                        :value="option.label">
-                                        {{ option.label }}. {{ option.value }}
-                                    </n-checkbox>
-                                </n-space>
-                            </n-checkbox-group>
-                        </n-form-item>
-                    </div>
-                </n-form>
-            </div>
-
-            <!-- 填空题部分 -->
-            <div class="mb-8">
-                <div class="text-lg font-bold mb-4 pb-2 border-b">
-                    填空题（每题{{ questionScores.fill }}分，共{{ fillQuestions.length * questionScores.fill }}分）
-                </div>
-                <n-form ref="fillFormRef" :model="answers.fill" :rules="fillRules">
-                    <div v-for="(question, index) in fillQuestions" :key="question.id" class="mb-8">
-                        <n-form-item :path="`q${question.id}`" :label="`${index + 1}. ${question.title}`">
-                            <n-input v-model:value="answers.fill[`q${question.id}`]" type="text" placeholder="请输入答案" />
-                        </n-form-item>
-                    </div>
-                </n-form>
-            </div>
-
-            <!-- 简答题部分 -->
-            <div class="mb-8">
-                <div class="text-lg font-bold mb-4 pb-2 border-b">
-                    简答题（每题{{ questionScores.essay }}分，共{{ essayQuestions.length * questionScores.essay }}分）
-                </div>
-                <n-form ref="essayFormRef" :model="answers.essay" :rules="essayRules">
-                    <div v-for="(question, index) in essayQuestions" :key="question.id" class="mb-8">
-                        <n-form-item :path="`q${question.id}`" :label="`${index + 1}. ${question.title}`">
-                            <n-input v-model:value="answers.essay[`q${question.id}`]" type="textarea"
-                                placeholder="请输入你的答案" :rows="4" />
-                        </n-form-item>
-                    </div>
-                </n-form>
-            </div>
-
-
-
-            <!-- 提交按钮 -->
-            <div class="flex justify-center mt-8">
-                <n-button type="primary" size="large" @click="handleSubmit" :loading="submitting">
-                    提交答案
-                </n-button>
-            </div>
-        </n-card>
-
-        <!-- 得分详情弹窗 -->
-        <n-modal v-model:show="showScoreModal" preset="card" title="考试得分详情" style="width: 800px" :mask-closable="false"
-            :closable="false">
-            <n-tabs type="line" animated>
-                <!-- 总分概览 -->
-                <n-tab-pane name="overview" tab="得分概览">
-                    <div class="space-y-6">
-                        <!-- 总分 -->
-                        <div class="text-center">
-                            <div class="text-4xl font-bold text-primary mb-2">
-                                {{ examScore }}
-                            </div>
-                            <div class="text-gray-500">总分</div>
-                        </div>
-
-                        <!-- 分类得分 -->
-                        <div class="space-y-4">
-                            <!-- 选择题得分 -->
-                            <div class="flex justify-between items-center">
-                                <div class="font-medium">选择题</div>
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-xl font-bold">{{ scoreDetails.choice }}</span>
-                                    <span class="text-gray-500">/ {{ choiceQuestions.length * questionScores.choice
-                                        }}</span>
-                                </div>
-                            </div>
-
-                            <!-- 扩展题得分 -->
-                            <div class="flex justify-between items-center">
-                                <div class="font-medium">扩展题</div>
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-xl font-bold">{{ scoreDetails.expand }}</span>
-                                    <span class="text-gray-500">/ {{ expandQuestions.length * questionScores.expand
-                                        }}</span>
-                                </div>
-                            </div>
-
-                            <!-- 判断题得分 -->
-                            <div class="flex justify-between items-center">
-                                <div class="font-medium">判断题</div>
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-xl font-bold">{{ scoreDetails.judgment }}</span>
-                                    <span class="text-gray-500">/ {{ judgmentQuestions.length * questionScores.judgment
-                                        }}</span>
-                                </div>
-                            </div>
-
-                            <!-- 多选题得分 -->
-                            <div class="flex justify-between items-center">
-                                <div class="font-medium">多选题</div>
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-xl font-bold">{{ scoreDetails.multiple }}</span>
-                                    <span class="text-gray-500">/ {{ multipleQuestions.length * questionScores.multiple
-                                        }}</span>
-                                </div>
-                            </div>
-
-                            <!-- 简答题得分 -->
-                            <div class="flex justify-between items-center">
-                                <div class="font-medium">简答题</div>
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-xl font-bold">{{ scoreDetails.essay }}</span>
-                                    <span class="text-gray-500">/ {{ essayQuestions.length * questionScores.essay
-                                        }}</span>
-                                </div>
-                            </div>
-
-                            <!-- 填空题得分 -->
-                            <div class="flex justify-between items-center">
-                                <div class="font-medium">填空题</div>
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-xl font-bold">{{ scoreDetails.fill }}</span>
-                                    <span class="text-gray-500">/ {{ fillQuestions.length * questionScores.fill
-                                        }}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 分割线 -->
-                        <n-divider />
-                    </div>
-                </n-tab-pane>
-
-                <!-- 答题详情 -->
-                <n-tab-pane name="details" tab="答题详情">
-                    <div class="space-y-8">
-                        <!-- 选择题详情 -->
-                        <div v-if="choiceQuestions.length">
-                            <h3 class="text-lg font-bold mb-4">选择题</h3>
-                            <div class="space-y-4">
-                                <div v-for="(question, index) in choiceQuestions" :key="question.id"
-                                    class="p-4 rounded-lg"
-                                    :class="isAnswerCorrect('choice', question) ? 'dark:bg-green-900/20' : 'dark:bg-red-900/20'">
-                                    <div class="flex items-start justify-between">
-                                        <div>
-                                            <div class="font-medium mb-2">
-                                                {{ index + 1 }}. {{ question.title }}
-                                            </div>
-                                            <div class="text-sm dark:text-gray-400">
-                                                您的答案：{{ getAnswerDisplay('choice', question) }}
-                                            </div>
-                                            <div class="text-sm"
-                                                :class="isAnswerCorrect('choice', question) ? 'text-green-500' : 'text-red-500'">
-                                                正确答案：{{ getCorrectAnswerDisplay(question) }}
-                                            </div>
-                                        </div>
-                                        <n-tag :type="isAnswerCorrect('choice', question) ? 'success' : 'error'">
-                                            {{ isAnswerCorrect('choice', question) ? '正确' : '错误' }}
-                                        </n-tag>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 扩展题详情 -->
-                        <div v-if="expandQuestions.length">
-                            <h3 class="text-lg font-bold mb-4">选择题</h3>
-                            <div class="space-y-4">
-                                <div v-for="(question, index) in expandQuestions" :key="question.id"
-                                    class="p-4 rounded-lg"
-                                    :class="isAnswerCorrect('choice', question) ? 'dark:bg-green-900/20' : 'dark:bg-red-900/20'">
-                                    <div class="flex items-start justify-between">
-                                        <div>
-                                            <div class="font-medium mb-2">
-                                                {{ index + 1 }}. {{ question.title }}
-                                            </div>
-                                            <div class="text-sm dark:text-gray-400">
-                                                您的答案：{{ getAnswerDisplay('choice', question) }}
-                                            </div>
-                                            <div class="text-sm"
-                                                :class="isAnswerCorrect('choice', question) ? 'text-green-500' : 'text-red-500'">
-                                                正确答案：{{ getCorrectAnswerDisplay(question) }}
-                                            </div>
-                                        </div>
-                                        <n-tag :type="isAnswerCorrect('choice', question) ? 'success' : 'error'">
-                                            {{ isAnswerCorrect('choice', question) ? '正确' : '错误' }}
-                                        </n-tag>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 判断题详情 -->
-                        <div v-if="judgmentQuestions.length">
-                            <h3 class="text-lg font-bold mb-4">判断题</h3>
-                            <div class="space-y-4">
-                                <div v-for="(question, index) in judgmentQuestions" :key="question.id"
-                                    class="p-4 rounded-lg"
-                                    :class="isAnswerCorrect('judgment', question) ? 'dark:bg-green-900/20' : 'dark:bg-red-900/20'">
-                                    <div class="flex items-start justify-between">
-                                        <div>
-                                            <div class="font-medium mb-2">
-                                                {{ index + 1 }}. {{ question.title }}
-                                            </div>
-                                            <div class="text-sm dark:text-gray-400">
-                                                您的答案：{{ answers.judgment[`q${question.id}`] === 'true' ? '正确' : '错误' }}
-                                            </div>
-                                            <div class="text-sm"
-                                                :class="isAnswerCorrect('judgment', question) ? 'text-green-500' : 'text-red-500'">
-                                                正确答案：{{ question.answer === 'true' ? '正确' : '错误' }}
-                                            </div>
-                                        </div>
-                                        <n-tag :type="isAnswerCorrect('judgment', question) ? 'success' : 'error'">
-                                            {{ isAnswerCorrect('judgment', question) ? '正确' : '错误' }}
-                                        </n-tag>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 多选题详情 -->
-                        <div v-if="multipleQuestions.length">
-                            <h3 class="text-lg font-bold mb-4">多选题</h3>
-                            <div class="space-y-4">
-                                <div v-for="(question, index) in multipleQuestions" :key="question.id"
-                                    class="p-4 rounded-lg"
-                                    :class="isAnswerCorrect('multiple', question) ? 'dark:bg-green-900/20' : 'dark:bg-red-900/20'">
-                                    <div class="flex items-start justify-between">
-                                        <div>
-                                            <div class="font-medium mb-2">
-                                                {{ index + 1 }}. {{ question.title }}
-                                            </div>
-                                            <div class="text-sm dark:text-gray-400">
-                                                您的答案：{{ getAnswerDisplay('multiple', question) }}
-                                            </div>
-                                            <div class="text-sm"
-                                                :class="isAnswerCorrect('multiple', question) ? 'text-green-500' : 'text-red-500'">
-                                                正确答案：{{ getCorrectAnswerDisplay(question) }}
-                                            </div>
-                                        </div>
-                                        <n-tag :type="isAnswerCorrect('multiple', question) ? 'success' : 'error'">
-                                            {{ isAnswerCorrect('multiple', question) ? '正确' : '错误' }}
-                                        </n-tag>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 填空题详情 -->
-                        <div v-if="fillQuestions.length">
-                            <h3 class="text-lg font-bold mb-4">填空题</h3>
-                            <div class="space-y-4">
-                                <div v-for="(question, index) in fillQuestions" :key="question.id"
-                                    class="p-4 rounded-lg"
-                                    :class="isAnswerCorrect('fill', question) ? 'dark:bg-green-900/20' : 'dark:bg-red-900/20'">
-                                    <div class="flex items-start justify-between">
-                                        <div>
-                                            <div class="font-medium mb-2">
-                                                {{ index + 1 }}. {{ question.title }}
-                                            </div>
-                                            <div class="text-sm dark:text-gray-400">
-                                                您的答案：{{ getAnswerDisplay('fill', question) }}
-                                            </div>
-                                            <div class="text-sm"
-                                                :class="isAnswerCorrect('fill', question) ? 'text-green-500' : 'text-red-500'">
-                                                正确答案：{{ question.answer }}
-                                            </div>
-                                        </div>
-                                        <n-tag :type="isAnswerCorrect('fill', question) ? 'success' : 'error'">
-                                            {{ isAnswerCorrect('fill', question) ? '正确' : '错误' }}
-                                        </n-tag>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 简答题详情 -->
-                        <div v-if="essayQuestions.length">
-                            <h3 class="text-lg font-bold mb-4">简答题</h3>
-                            <div class="space-y-4">
-                                <div v-for="(question, index) in essayQuestions" :key="question.id"
-                                    class="p-4 rounded-lg dark:bg-gray-800/50">
-                                    <div>
-                                        <div class="font-medium mb-2">
-                                            {{ index + 1 }}. {{ question.title }}
-                                        </div>
-                                        <div class="text-sm dark:text-gray-400 mb-2">
-                                            您的答案：{{ answers.essay[`q${question.id}`] }}
-                                        </div>
-                                        <div class="text-sm text-emerald-500">
-                                            得分：{{ getEssayScore(question) }} / {{ questionScores.essay }}
-                                        </div>
-                                        <div class="text-sm dark:text-gray-400 mt-2">
-                                            关键词：{{ question.keywords?.join('、') }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-
-                    </div>
-                </n-tab-pane>
-            </n-tabs>
-
-            <!-- 按钮 -->
-            <template #footer>
-                <div class="flex justify-center">
-                    <n-button type="primary" @click="handleNext">
-                        查看证书
-                    </n-button>
-                </div>
-            </template>
-        </n-modal>
+  <div class="w-full h-full flex flex-col space-y-6 p-4">
+    <!-- 考试信息 -->
+    <div class="flex justify-between items-center">
+      <h2 class="text-xl font-bold">考试题目</h2>
+      <div class="text-gray-400">
+        总分：{{ totalScore }} 分
+      </div>
     </div>
+
+    <n-card>
+      <!-- 选择题部分 -->
+      <div class="mb-8">
+        <div class="text-lg font-bold mb-4 pb-2 border-b">
+          选择题（每题{{ questionScores.choice }}分，共{{ choiceQuestions.length * questionScores.choice }}分）
+        </div>
+        <n-form ref="choiceFormRef"
+                :model="answers.choice"
+                :rules="choiceRules">
+          <div v-for="(question, index) in choiceQuestions"
+               :key="question.id"
+               class="mb-8">
+            <n-form-item :path="`q${question.id}`"
+                         :label="`${index + 1}. ${question.title}`">
+              <n-radio-group v-model:value="answers.choice[`q${question.id}`]">
+                <n-space vertical>
+                  <n-radio v-for="option in question.options"
+                           :key="option.value"
+                           :value="option.label">
+                    {{ option.label }}. {{ option.value }}
+                  </n-radio>
+                </n-space>
+              </n-radio-group>
+            </n-form-item>
+          </div>
+        </n-form>
+      </div>
+
+      <!--  扩展题部分 -->
+      <div class="mb-8">
+        <div class="text-lg font-bold mb-4 pb-2 border-b">
+          扩展题（每题{{ questionScores.expand }}分，共{{ expandQuestions.length * questionScores.expand }}分）
+        </div>
+        <n-form ref="expandFormRef"
+                :model="answers.expand"
+                :rules="expandRules">
+          <div v-for="(question, index) in expandQuestions"
+               :key="question.id"
+               class="mb-8">
+            <n-form-item :path="`q${question.id}`"
+                         :label="`${index + 1}. ${question.title}`">
+              <n-radio-group v-model:value="answers.expand[`q${question.id}`]">
+                <n-space vertical>
+                  <n-radio v-for="option in question.options"
+                           :key="option.value"
+                           :value="option.label">
+                    {{ option.label }}. {{ option.value }}
+                  </n-radio>
+                </n-space>
+              </n-radio-group>
+            </n-form-item>
+          </div>
+        </n-form>
+      </div>
+
+      <!-- 判断题部分 -->
+      <div class="mb-8">
+        <div class="text-lg font-bold mb-4 pb-2 border-b">
+          判断题（每题{{ questionScores.judgment }}分，共{{ judgmentQuestions.length * questionScores.judgment }}分）
+        </div>
+        <n-form ref="judgmentFormRef"
+                :model="answers.judgment"
+                :rules="judgmentRules">
+          <div v-for="(question, index) in judgmentQuestions"
+               :key="question.id"
+               class="mb-8">
+            <n-form-item :path="`q${question.id}`"
+                         :label="`${index + 1}. ${question.title}`">
+              <n-radio-group v-model:value="answers.judgment[`q${question.id}`]">
+                <n-space>
+                  <n-radio value="true">正确</n-radio>
+                  <n-radio value="false">错误</n-radio>
+                </n-space>
+              </n-radio-group>
+            </n-form-item>
+          </div>
+        </n-form>
+      </div>
+
+      <!-- 多选题部分 -->
+      <div class="mb-8">
+        <div class="text-lg font-bold mb-4 pb-2 border-b">
+          多选题（每题{{ questionScores.multiple }}分，共{{ multipleQuestions.length * questionScores.multiple }}分）
+        </div>
+        <n-form ref="multipleFormRef"
+                :model="answers.multiple"
+                :rules="multipleRules">
+          <div v-for="(question, index) in multipleQuestions"
+               :key="question.id"
+               class="mb-8">
+            <n-form-item :path="`q${question.id}`"
+                         :label="`${index + 1}. ${question.title}`">
+              <n-checkbox-group v-model:value="answers.multiple[`q${question.id}`]">
+                <n-space vertical>
+                  <n-checkbox v-for="option in question.options"
+                              :key="option.value"
+                              :value="option.label">
+                    {{ option.label }}. {{ option.value }}
+                  </n-checkbox>
+                </n-space>
+              </n-checkbox-group>
+            </n-form-item>
+          </div>
+        </n-form>
+      </div>
+
+      <!-- 填空题部分 -->
+      <div class="mb-8">
+        <div class="text-lg font-bold mb-4 pb-2 border-b">
+          填空题（每题{{ questionScores.fill }}分，共{{ fillQuestions.length * questionScores.fill }}分）
+        </div>
+        <n-form ref="fillFormRef"
+                :model="answers.fill"
+                :rules="fillRules">
+          <div v-for="(question, index) in fillQuestions"
+               :key="question.id"
+               class="mb-8">
+            <n-form-item :path="`q${question.id}`"
+                         :label="`${index + 1}. ${question.title}`">
+              <n-input v-model:value="answers.fill[`q${question.id}`]"
+                       type="text"
+                       placeholder="请输入答案" />
+            </n-form-item>
+          </div>
+        </n-form>
+      </div>
+
+      <!-- 简答题部分 -->
+      <div class="mb-8">
+        <div class="text-lg font-bold mb-4 pb-2 border-b">
+          简答题（每题{{ questionScores.essay }}分，共{{ essayQuestions.length * questionScores.essay }}分）
+        </div>
+        <n-form ref="essayFormRef"
+                :model="answers.essay"
+                :rules="essayRules">
+          <div v-for="(question, index) in essayQuestions"
+               :key="question.id"
+               class="mb-8">
+            <n-form-item :path="`q${question.id}`"
+                         :label="`${index + 1}. ${question.title}`">
+              <n-input v-model:value="answers.essay[`q${question.id}`]"
+                       type="textarea"
+                       placeholder="请输入你的答案"
+                       :rows="4" />
+            </n-form-item>
+          </div>
+        </n-form>
+      </div>
+
+      <!-- 提交按钮 -->
+      <div class="flex justify-center mt-8">
+        <n-button type="primary"
+                  size="large"
+                  @click="handleSubmit"
+                  :loading="submitting">
+          提交答案
+        </n-button>
+      </div>
+    </n-card>
+
+    <!-- 得分详情弹窗 -->
+    <n-modal v-model:show="showScoreModal"
+             preset="card"
+             title="考试得分详情"
+             style="width: 800px"
+             :mask-closable="false"
+             :closable="false">
+      <n-tabs type="line"
+              animated>
+        <!-- 总分概览 -->
+        <n-tab-pane name="overview"
+                    tab="得分概览">
+          <div class="space-y-6">
+            <!-- 总分 -->
+            <div class="text-center">
+              <div class="text-4xl font-bold text-primary mb-2">
+                {{ examScore }}
+              </div>
+              <div class="text-gray-500">总分</div>
+            </div>
+
+            <!-- 分类得分 -->
+            <div class="space-y-4">
+              <!-- 选择题得分 -->
+              <div class="flex justify-between items-center">
+                <div class="font-medium">选择题</div>
+                <div class="flex items-center space-x-2">
+                  <span class="text-xl font-bold">{{ scoreDetails.choice }}</span>
+                  <span class="text-gray-500">/ {{ choiceQuestions.length * questionScores.choice
+                                        }}</span>
+                </div>
+              </div>
+
+              <!-- 扩展题得分 -->
+              <div class="flex justify-between items-center">
+                <div class="font-medium">扩展题</div>
+                <div class="flex items-center space-x-2">
+                  <span class="text-xl font-bold">{{ scoreDetails.expand }}</span>
+                  <span class="text-gray-500">/ {{ expandQuestions.length * questionScores.expand
+                                        }}</span>
+                </div>
+              </div>
+
+              <!-- 判断题得分 -->
+              <div class="flex justify-between items-center">
+                <div class="font-medium">判断题</div>
+                <div class="flex items-center space-x-2">
+                  <span class="text-xl font-bold">{{ scoreDetails.judgment }}</span>
+                  <span class="text-gray-500">/ {{ judgmentQuestions.length * questionScores.judgment
+                                        }}</span>
+                </div>
+              </div>
+
+              <!-- 多选题得分 -->
+              <div class="flex justify-between items-center">
+                <div class="font-medium">多选题</div>
+                <div class="flex items-center space-x-2">
+                  <span class="text-xl font-bold">{{ scoreDetails.multiple }}</span>
+                  <span class="text-gray-500">/ {{ multipleQuestions.length * questionScores.multiple
+                                        }}</span>
+                </div>
+              </div>
+
+              <!-- 简答题得分 -->
+              <div class="flex justify-between items-center">
+                <div class="font-medium">简答题</div>
+                <div class="flex items-center space-x-2">
+                  <span class="text-xl font-bold">{{ scoreDetails.essay }}</span>
+                  <span class="text-gray-500">/ {{ essayQuestions.length * questionScores.essay
+                                        }}</span>
+                </div>
+              </div>
+
+              <!-- 填空题得分 -->
+              <div class="flex justify-between items-center">
+                <div class="font-medium">填空题</div>
+                <div class="flex items-center space-x-2">
+                  <span class="text-xl font-bold">{{ scoreDetails.fill }}</span>
+                  <span class="text-gray-500">/ {{ fillQuestions.length * questionScores.fill
+                                        }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 分割线 -->
+            <n-divider />
+          </div>
+        </n-tab-pane>
+
+        <!-- 答题详情 -->
+        <n-tab-pane name="details"
+                    tab="答题详情">
+          <div class="space-y-8">
+            <!-- 选择题详情 -->
+            <div v-if="choiceQuestions.length">
+              <h3 class="text-lg font-bold mb-4">选择题</h3>
+              <div class="space-y-4">
+                <div v-for="(question, index) in choiceQuestions"
+                     :key="question.id"
+                     class="p-4 rounded-lg"
+                     :class="isAnswerCorrect('choice', question) ? 'dark:bg-green-900/20' : 'dark:bg-red-900/20'">
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <div class="font-medium mb-2">
+                        {{ index + 1 }}. {{ question.title }}
+                      </div>
+                      <div class="text-sm dark:text-gray-400">
+                        您的答案：{{ getAnswerDisplay('choice', question) }}
+                      </div>
+                      <div class="text-sm"
+                           :class="isAnswerCorrect('choice', question) ? 'text-green-500' : 'text-red-500'">
+                        正确答案：{{ getCorrectAnswerDisplay(question) }}
+                      </div>
+                    </div>
+                    <n-tag :type="isAnswerCorrect('choice', question) ? 'success' : 'error'">
+                      {{ isAnswerCorrect('choice', question) ? '正确' : '错误' }}
+                    </n-tag>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 扩展题详情 -->
+            <div v-if="expandQuestions.length">
+              <h3 class="text-lg font-bold mb-4">选择题</h3>
+              <div class="space-y-4">
+                <div v-for="(question, index) in expandQuestions"
+                     :key="question.id"
+                     class="p-4 rounded-lg"
+                     :class="isAnswerCorrect('choice', question) ? 'dark:bg-green-900/20' : 'dark:bg-red-900/20'">
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <div class="font-medium mb-2">
+                        {{ index + 1 }}. {{ question.title }}
+                      </div>
+                      <div class="text-sm dark:text-gray-400">
+                        您的答案：{{ getAnswerDisplay('choice', question) }}
+                      </div>
+                      <div class="text-sm"
+                           :class="isAnswerCorrect('choice', question) ? 'text-green-500' : 'text-red-500'">
+                        正确答案：{{ getCorrectAnswerDisplay(question) }}
+                      </div>
+                    </div>
+                    <n-tag :type="isAnswerCorrect('choice', question) ? 'success' : 'error'">
+                      {{ isAnswerCorrect('choice', question) ? '正确' : '错误' }}
+                    </n-tag>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 判断题详情 -->
+            <div v-if="judgmentQuestions.length">
+              <h3 class="text-lg font-bold mb-4">判断题</h3>
+              <div class="space-y-4">
+                <div v-for="(question, index) in judgmentQuestions"
+                     :key="question.id"
+                     class="p-4 rounded-lg"
+                     :class="isAnswerCorrect('judgment', question) ? 'dark:bg-green-900/20' : 'dark:bg-red-900/20'">
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <div class="font-medium mb-2">
+                        {{ index + 1 }}. {{ question.title }}
+                      </div>
+                      <div class="text-sm dark:text-gray-400">
+                        您的答案：{{ answers.judgment[`q${question.id}`] === 'true' ? '正确' : '错误' }}
+                      </div>
+                      <div class="text-sm"
+                           :class="isAnswerCorrect('judgment', question) ? 'text-green-500' : 'text-red-500'">
+                        正确答案：{{ question.answer === 'true' ? '正确' : '错误' }}
+                      </div>
+                    </div>
+                    <n-tag :type="isAnswerCorrect('judgment', question) ? 'success' : 'error'">
+                      {{ isAnswerCorrect('judgment', question) ? '正确' : '错误' }}
+                    </n-tag>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 多选题详情 -->
+            <div v-if="multipleQuestions.length">
+              <h3 class="text-lg font-bold mb-4">多选题</h3>
+              <div class="space-y-4">
+                <div v-for="(question, index) in multipleQuestions"
+                     :key="question.id"
+                     class="p-4 rounded-lg"
+                     :class="isAnswerCorrect('multiple', question) ? 'dark:bg-green-900/20' : 'dark:bg-red-900/20'">
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <div class="font-medium mb-2">
+                        {{ index + 1 }}. {{ question.title }}
+                      </div>
+                      <div class="text-sm dark:text-gray-400">
+                        您的答案：{{ getAnswerDisplay('multiple', question) }}
+                      </div>
+                      <div class="text-sm"
+                           :class="isAnswerCorrect('multiple', question) ? 'text-green-500' : 'text-red-500'">
+                        正确答案：{{ getCorrectAnswerDisplay(question) }}
+                      </div>
+                    </div>
+                    <n-tag :type="isAnswerCorrect('multiple', question) ? 'success' : 'error'">
+                      {{ isAnswerCorrect('multiple', question) ? '正确' : '错误' }}
+                    </n-tag>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 填空题详情 -->
+            <div v-if="fillQuestions.length">
+              <h3 class="text-lg font-bold mb-4">填空题</h3>
+              <div class="space-y-4">
+                <div v-for="(question, index) in fillQuestions"
+                     :key="question.id"
+                     class="p-4 rounded-lg"
+                     :class="isAnswerCorrect('fill', question) ? 'dark:bg-green-900/20' : 'dark:bg-red-900/20'">
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <div class="font-medium mb-2">
+                        {{ index + 1 }}. {{ question.title }}
+                      </div>
+                      <div class="text-sm dark:text-gray-400">
+                        您的答案：{{ getAnswerDisplay('fill', question) }}
+                      </div>
+                      <div class="text-sm"
+                           :class="isAnswerCorrect('fill', question) ? 'text-green-500' : 'text-red-500'">
+                        正确答案：{{ question.answer }}
+                      </div>
+                    </div>
+                    <n-tag :type="isAnswerCorrect('fill', question) ? 'success' : 'error'">
+                      {{ isAnswerCorrect('fill', question) ? '正确' : '错误' }}
+                    </n-tag>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 简答题详情 -->
+            <div v-if="essayQuestions.length">
+              <h3 class="text-lg font-bold mb-4">简答题</h3>
+              <div class="space-y-4">
+                <div v-for="(question, index) in essayQuestions"
+                     :key="question.id"
+                     class="p-4 rounded-lg dark:bg-gray-800/50">
+                  <div>
+                    <div class="font-medium mb-2">
+                      {{ index + 1 }}. {{ question.title }}
+                    </div>
+                    <div class="text-sm dark:text-gray-400 mb-2">
+                      您的答案：{{ answers.essay[`q${question.id}`] }}
+                    </div>
+                    <div class="text-sm text-emerald-500">
+                      得分：{{ getEssayScore(question) }} / {{ questionScores.essay }}
+                    </div>
+                    <div class="text-sm dark:text-gray-400 mt-2">
+                      关键词：{{ question.keywords?.join('、') }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </n-tab-pane>
+      </n-tabs>
+
+      <!-- 按钮 -->
+      <template #footer>
+        <div class="flex justify-center">
+          <n-button type="primary"
+                    @click="handleNext">
+            查看证书
+          </n-button>
+        </div>
+      </template>
+    </n-modal>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -405,7 +456,6 @@ import { useMessage } from 'naive-ui'
 import type { FormInst } from 'naive-ui'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
-
 
 const message = useMessage()
 const userStore = useUserStore()
@@ -421,22 +471,22 @@ const expandFormRef = ref<FormInst | null>(null)
 
 // 修改答案类型定义
 interface Answers {
-    choice: Record<string, string>
-    multiple: Record<string, string[]>
-    judgment: Record<string, string>
-    essay: Record<string, string>
-    fill: Record<string, string>
-    expand: Record<string, string>
+  choice: Record<string, string>
+  multiple: Record<string, string[]>
+  judgment: Record<string, string>
+  essay: Record<string, string>
+  fill: Record<string, string>
+  expand: Record<string, string>
 }
 
 // 初始化答案对象，按题型分类
 const answers = ref<Answers>({
-    choice: {},
-    multiple: {},
-    judgment: {},
-    essay: {},
-    fill: {},
-    expand: {}
+  choice: {},
+  multiple: {},
+  judgment: {},
+  essay: {},
+  fill: {},
+  expand: {},
 })
 
 // 随机抽取考试题目
@@ -444,387 +494,431 @@ const examQuestions = ref(getRandomQuestions(dataManager.getQuestions()))
 
 // 计算总分
 const totalScore = computed(() => {
-    return examQuestions.value.reduce((total, q) => total + (q.score || 0), 0)
+  return examQuestions.value.reduce((total, q) => total + (q.score || 0), 0)
 })
 
 const submitting = ref(false)
 
 // 分别定义各题型的验证规则
 const choiceRules = computed(() => {
-    const rules: Record<string, any> = {}
-    choiceQuestions.value.forEach(q => {
-        rules[`q${q.id}`] = {
-            required: true,
-            message: '请选择答案',
-            trigger: ['blur', 'change']
-        }
-    })
-    return rules
+  const rules: Record<string, any> = {}
+  choiceQuestions.value.forEach((q) => {
+    rules[`q${q.id}`] = {
+      required: true,
+      message: '请选择答案',
+      trigger: ['blur', 'change'],
+    }
+  })
+  return rules
 })
 
 const expandRules = computed(() => {
-    const rules: Record<string, any> = {}
-    expandQuestions.value.forEach(q => {
-        rules[`q${q.id}`] = {
-            required: true,
-            message: '请选择答案',
-            trigger: ['blur', 'change']
-        }
-    })
-    return rules
+  const rules: Record<string, any> = {}
+  expandQuestions.value.forEach((q) => {
+    rules[`q${q.id}`] = {
+      required: true,
+      message: '请选择答案',
+      trigger: ['blur', 'change'],
+    }
+  })
+  return rules
 })
 
 const judgmentRules = computed(() => {
-    const rules: Record<string, any> = {}
-    judgmentQuestions.value.forEach(q => {
-        rules[`q${q.id}`] = {
-            required: true,
-            message: '请选择答案',
-            trigger: ['blur', 'change']
-        }
-    })
-    return rules
+  const rules: Record<string, any> = {}
+  judgmentQuestions.value.forEach((q) => {
+    rules[`q${q.id}`] = {
+      required: true,
+      message: '请选择答案',
+      trigger: ['blur', 'change'],
+    }
+  })
+  return rules
 })
 
 const multipleRules = computed(() => {
-    const rules: Record<string, any> = {}
-    multipleQuestions.value.forEach(q => {
-        rules[`q${q.id}`] = {
-            required: true,
-            type: 'array',
-            min: 1,
-            message: '请至少选择一个选项',
-            trigger: ['blur', 'change']
-        }
-    })
-    return rules
+  const rules: Record<string, any> = {}
+  multipleQuestions.value.forEach((q) => {
+    rules[`q${q.id}`] = {
+      required: true,
+      type: 'array',
+      min: 1,
+      message: '请至少选择一个选项',
+      trigger: ['blur', 'change'],
+    }
+  })
+  return rules
 })
 
 const essayRules = computed(() => {
-    const rules: Record<string, any> = {}
-    essayQuestions.value.forEach(q => {
-        rules[`q${q.id}`] = {
-            required: true,
-            message: '请输入答案',
-            trigger: ['blur', 'change']
-        }
-    })
-    return rules
+  const rules: Record<string, any> = {}
+  essayQuestions.value.forEach((q) => {
+    rules[`q${q.id}`] = {
+      required: true,
+      message: '请输入答案',
+      trigger: ['blur', 'change'],
+    }
+  })
+  return rules
 })
 
 // 添加填空题验证规则
 const fillRules = computed(() => {
-    const rules: Record<string, any> = {}
-    fillQuestions.value.forEach(q => {
-        rules[`q${q.id}`] = {
-            required: true,
-            message: '请填写答案',
-            trigger: ['blur', 'change']
-        }
-    })
-    return rules
+  const rules: Record<string, any> = {}
+  fillQuestions.value.forEach((q) => {
+    rules[`q${q.id}`] = {
+      required: true,
+      message: '请填写答案',
+      trigger: ['blur', 'change'],
+    }
+  })
+  return rules
 })
 
 // 计算简答题得分
 const calculateEssayScore = (answer: string, keywords: string[]) => {
-    if (!answer || !keywords.length) return 0
+  if (!answer || !keywords.length) return 0
 
-    // 将答案转换为小写以进行不区分大小写的匹配
-    const lowerAnswer = answer.toLowerCase()
+  // 将答案转换为小写以进行不区分大小写的匹配
+  const lowerAnswer = answer.toLowerCase()
 
-    // 计算匹配的关键词数量
-    const matchedKeywords = keywords.filter(keyword =>
-        lowerAnswer.includes(keyword.toLowerCase())
-    )
+  // 计算匹配的关键词数量
+  const matchedKeywords = keywords.filter((keyword) =>
+    lowerAnswer.includes(keyword.toLowerCase())
+  )
 
-    // 按关键词匹配比例计算得分
-    const matchRatio = matchedKeywords.length / keywords.length
-    return Math.floor(matchRatio * questionScores.value.essay)
+  // 按关键词匹配比例计算得分
+  const matchRatio = matchedKeywords.length / keywords.length
+  return Math.floor(matchRatio * questionScores.value.essay)
 }
 
 const showScoreModal = ref(false)
 const examScore = ref(0)
 const scoreDetails = ref({
-    choice: 0,
-    judgment: 0,
-    multiple: 0,
-    essay: 0,
-    fill: 0,
-    expand: 0
+  choice: 0,
+  judgment: 0,
+  multiple: 0,
+  essay: 0,
+  fill: 0,
+  expand: 0,
 })
 
 // 计算得分详情
 const calculateScoreDetails = () => {
-    const details = {
-        choice: 0,
-        multiple: 0,
-        judgment: 0,
-        essay: 0,
-        fill: 0,
-        expand: 0,
-    }
+  const details = {
+    choice: 0,
+    multiple: 0,
+    judgment: 0,
+    essay: 0,
+    fill: 0,
+    expand: 0,
+  }
 
-    examQuestions.value.forEach(question => {
-        const type_answer = answers.value[question.type]
-        const answer = type_answer[`q${question.id}`]
-        if (answer === undefined) return
+  examQuestions.value.forEach((question) => {
+    const type_answer = answers.value[question.type]
+    const answer = type_answer[`q${question.id}`]
+    // 移除这里的 return，确保未作答的题目也能被处理（得0分）
+    // if (answer === undefined) return
 
-        switch (question.type) {
-            case 'choice':
-                if (answer === question.answer) {
-                    details.choice += questionScores.value.choice
-                }
-                break
-
-            case 'expand':
-                if (answer === question.answer) {
-                    details.expand += questionScores.value.expand
-                }
-                break
-
-            case 'multiple':
-                const userAnswers = new Set(answer as string[])
-                const correctAnswers = new Set(question.answer?.split(','))
-
-                // 检查答案是否完全一致:
-                // 1. 用户选择的数量要等于正确答案的数量
-                // 2. 每个选项都必须是正确的
-                if (userAnswers.size === correctAnswers.size &&
-                    Array.from(userAnswers).every(a => correctAnswers.has(a))) {
-                    details.multiple += questionScores.value.multiple
-                }
-                break
-
-            case 'judgment':
-                if (answer === question.answer) {
-                    details.judgment += questionScores.value.judgment
-                }
-                break
-
-            case 'essay':
-                if (question.keywords) {
-                    details.essay += calculateEssayScore(answer as string, question.keywords)
-                }
-                break
-
-            case 'fill':
-                if ((answer as string).toLowerCase() === question.answer?.toLowerCase()) {
-                    details.fill += questionScores.value.fill
-                }
-                break
+    switch (question.type) {
+      case 'choice':
+        if (answer === question.answer) {
+          details.choice += questionScores.value.choice
         }
-    })
+        break
 
-    return details
+      case 'expand':
+        if (answer === question.answer) {
+          details.expand += questionScores.value.expand
+        }
+        break
+
+      case 'multiple':
+        if (answer) {
+          // 添加判断，确保answer存在
+          const userAnswers = new Set(answer as string[])
+          const correctAnswers = new Set(question.answer?.split(','))
+
+          // 检查答案是否完全一致:
+          // 1. 用户选择的数量要等于正确答案的数量
+          // 2. 每个选项都必须是正确的
+          if (
+            userAnswers.size === correctAnswers.size &&
+            Array.from(userAnswers).every((a) => correctAnswers.has(a))
+          ) {
+            details.multiple += questionScores.value.multiple
+          }
+        }
+        break
+
+      case 'judgment':
+        if (answer === question.answer) {
+          details.judgment += questionScores.value.judgment
+        }
+        break
+
+      case 'essay':
+        if (question.keywords && answer) {
+          // 确保answer存在
+          details.essay += calculateEssayScore(
+            answer as string,
+            question.keywords
+          )
+        }
+        break
+
+      case 'fill':
+        if (
+          answer && // 确保answer存在
+          (answer as string).toLowerCase() === question.answer?.toLowerCase()
+        ) {
+          details.fill += questionScores.value.fill
+        }
+        break
+    }
+  })
+
+  return details
 }
 
 // 添加考试状态
 const examSubmitted = ref(false)
 
+// 检查所有表单是否有效
+const checkAllFormsValid = async () => {
+  try {
+    await Promise.all([
+      choiceFormRef.value?.validate(),
+      expandFormRef.value?.validate(),
+      judgmentFormRef.value?.validate(),
+      multipleFormRef.value?.validate(),
+      essayFormRef.value?.validate(),
+      fillFormRef.value?.validate(),
+    ])
+    return true
+  } catch (errors) {
+    return false
+  }
+}
+
+// 提交考试
+const submitExam = async () => {
+  submitting.value = true
+  try {
+    // 计算得分详情
+    scoreDetails.value = calculateScoreDetails()
+
+    // 计算总分
+    examScore.value = Object.values(scoreDetails.value).reduce(
+      (a, b) => a + b,
+      0
+    )
+
+    // 保存分数
+    userStore.saveExamResult(currentUser.value!.name, examScore.value)
+
+    // 显示得分详情弹窗
+    examSubmitted.value = true // 标记考试已提交
+    showScoreModal.value = true
+  } finally {
+    submitting.value = false
+  }
+}
+
 // 提交处理
 const handleSubmit = async () => {
-    try {
-        const validations = await Promise.all([
-            choiceFormRef.value?.validate(),
-            expandFormRef.value?.validate(),
-            judgmentFormRef.value?.validate(),
-            multipleFormRef.value?.validate(),
-            essayFormRef.value?.validate(),
-            fillFormRef.value?.validate()
-        ])
+  // 检查是否所有题目都已回答
+  const allFormsValid = await checkAllFormsValid()
 
-        if (!validations.some(v => v?.warnings?.length)) {
-            submitting.value = true
-            try {
-                // 计算得分详情
-                scoreDetails.value = calculateScoreDetails()
-
-                // 计算总分
-                examScore.value = Object.values(scoreDetails.value).reduce((a, b) => a + b, 0)
-
-                // 保存分数
-                userStore.saveExamResult(currentUser.value!.name, examScore.value)
-
-                // 显示得分详情弹窗
-                examSubmitted.value = true  // 标记考试已提交
-                showScoreModal.value = true
-            } finally {
-                submitting.value = false
-            }
-        }
-    } catch (errors) {
-        message.error('请完成所有题目')
-    }
+  if (!allFormsValid) {
+    // 如果有未回答的题目，弹出确认对话框
+    dialog.warning({
+      title: '提交确认',
+      content: '您有未完成的题目，确定要提交吗？未回答的题目将被视为错误。',
+      positiveText: '确认提交',
+      negativeText: '继续作答',
+      onPositiveClick: () => {
+        submitExam()
+      },
+    })
+  } else {
+    // 所有题目都已回答，直接提交
+    submitExam()
+  }
 }
 
 // 导出考试状态供路由守卫使用
 defineExpose({
-    examSubmitted
+  examSubmitted,
 })
 
 const router = useRouter()
 const handleNext = () => {
-    showScoreModal.value = false
-    router.push({ name: 'user' })
+  showScoreModal.value = false
+  router.push({ name: 'user' })
 }
 
 // 按题型分组的计算属性
 const choiceQuestions = computed(() =>
-    examQuestions.value.filter(q => q.type === 'choice')
+  examQuestions.value.filter((q) => q.type === 'choice')
 )
 
 const expandQuestions = computed(() =>
-    examQuestions.value.filter(q => q.type === 'expand')
+  examQuestions.value.filter((q) => q.type === 'expand')
 )
 
 const judgmentQuestions = computed(() =>
-    examQuestions.value.filter(q => q.type === 'judgment')
+  examQuestions.value.filter((q) => q.type === 'judgment')
 )
 
 const multipleQuestions = computed(() =>
-    examQuestions.value.filter(q => q.type === 'multiple')
+  examQuestions.value.filter((q) => q.type === 'multiple')
 )
 
 const essayQuestions = computed(() =>
-    examQuestions.value.filter(q => q.type === 'essay')
+  examQuestions.value.filter((q) => q.type === 'essay')
 )
 
 const fillQuestions = computed(() =>
-    examQuestions.value.filter(q => q.type === 'fill')
+  examQuestions.value.filter((q) => q.type === 'fill')
 )
 
 onMounted(async () => {
-    try {
-        await dataManager.init()
-        examQuestions.value = getRandomQuestions(dataManager.getQuestions())
+  try {
+    await dataManager.init()
+    examQuestions.value = getRandomQuestions(dataManager.getQuestions())
 
-        console.log('题目加载成功')
-        console.log(`选择题：${choiceQuestions.value.length} 道，扩展题：${expandQuestions.value.length} 道，判断题：${judgmentQuestions.value.length} 道，多选题：${multipleQuestions.value.length} 道，简答题：${essayQuestions.value.length} 道，填空题：${fillQuestions.value.length} 道`)
-    } catch (error) {
-        message.error('题目加载失败')
-    }
+    console.log('题目加载成功')
+    console.log(
+      `选择题：${choiceQuestions.value.length} 道，扩展题：${expandQuestions.value.length} 道，判断题：${judgmentQuestions.value.length} 道，多选题：${multipleQuestions.value.length} 道，简答题：${essayQuestions.value.length} 道，填空题：${fillQuestions.value.length} 道`
+    )
+  } catch (error) {
+    message.error('题目加载失败')
+  }
 })
 
 // 添加辅助函数
 const isAnswerCorrect = (type: keyof Answers, question: Question) => {
-    const answer = answers.value[type][`q${question.id}`]
-    if (!answer) return false
+  const answer = answers.value[type][`q${question.id}`]
+  if (!answer) return false
 
-    switch (type) {
-        case 'choice':
-        case 'expand':
-        case 'judgment':
-            return answer === question.answer
-        case 'multiple':
-            const userAnswers = (answer as string[]).sort().join(',')
-            const correctAnswers = question.answer?.split(',').sort().join(',')
-            return userAnswers === correctAnswers
-        case 'fill':
-            return (answer as string)?.toLowerCase() === question.answer?.toLowerCase()
-        default:
-            return false
-    }
+  switch (type) {
+    case 'choice':
+    case 'expand':
+    case 'judgment':
+      return answer === question.answer
+    case 'multiple':
+      const userAnswers = (answer as string[]).sort().join(',')
+      const correctAnswers = question.answer?.split(',').sort().join(',')
+      return userAnswers === correctAnswers
+    case 'fill':
+      return (
+        (answer as string)?.toLowerCase() === question.answer?.toLowerCase()
+      )
+    default:
+      return false
+  }
 }
 
 const getAnswerDisplay = (type: keyof Answers, question: Question) => {
-    const answer = answers.value[type][`q${question.id}`]
-    if (!answer) return '未作答'
+  const answer = answers.value[type][`q${question.id}`]
+  if (!answer) return '未作答'
 
-    if (type === 'multiple') {
-        return (answer as string[]).join('、')
-    }
-    return answer
+  if (type === 'multiple') {
+    return (answer as string[]).join('、')
+  }
+  return answer
 }
 
 const getCorrectAnswerDisplay = (question: Question) => {
-    if (question.type === 'multiple') {
-        return question.answer?.split(',').join('、')
-    }
-    return question.answer
+  if (question.type === 'multiple') {
+    return question.answer?.split(',').join('、')
+  }
+  return question.answer
 }
 
 const getEssayScore = (question: Question) => {
-    const answer = answers.value.essay[`q${question.id}`]
-    if (!answer || !question.keywords) return 0
-    return calculateEssayScore(answer, question.keywords)
+  const answer = answers.value.essay[`q${question.id}`]
+  if (!answer || !question.keywords) return 0
+  return calculateEssayScore(answer, question.keywords)
 }
 
 // 添加beforeunload事件处理
 const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-    if (!examSubmitted.value) {
-        e.preventDefault()
-        e.returnValue = ''
-    }
+  if (!examSubmitted.value) {
+    e.preventDefault()
+    e.returnValue = ''
+  }
 }
 
 const dialog = useDialog()
 // 添加路由守卫处理方法
 const handleRouteLeave = async (next: any) => {
-    if (!examSubmitted.value) {
-        return new Promise((resolve) => {
-            dialog.warning({
-                title: '确认离开',
-                content: '考试尚未提交，确定要离开吗？离开后答题记录将丢失。',
-                positiveText: '确认离开',
-                negativeText: '取消',
-                onPositiveClick: () => {
-                    resolve(true)
-                    next()
-                },
-                onNegativeClick: () => {
-                    resolve(false)
-                    next(false)
-                },
-                onClose: () => {
-                    resolve(false)
-                    next(false)
-                }
-            })
-        })
-    }
-    return next()
+  if (!examSubmitted.value) {
+    return new Promise((resolve) => {
+      dialog.warning({
+        title: '确认离开',
+        content: '考试尚未提交，确定要离开吗？离开后答题记录将丢失。',
+        positiveText: '确认离开',
+        negativeText: '取消',
+        onPositiveClick: () => {
+          resolve(true)
+          next()
+        },
+        onNegativeClick: () => {
+          resolve(false)
+          next(false)
+        },
+        onClose: () => {
+          resolve(false)
+          next(false)
+        },
+      })
+    })
+  }
+  return next()
 }
 
 // 修改路由监听逻辑
 onMounted(() => {
-    // 添加页面刷新/关闭提示
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    
-    // 注册全局路由守卫
-    const unregisterHook = router.beforeEach((to, from, next) => {
-        if (from.name === 'exam') {
-            handleRouteLeave(next)
-        } else {
-            next()
-        }
-    })
+  // 添加页面刷新/关闭提示
+  window.addEventListener('beforeunload', handleBeforeUnload)
 
-    // 组件卸载时清理路由守卫
-    onBeforeUnmount(() => {
-        unregisterHook()
-        window.removeEventListener('beforeunload', handleBeforeUnload)
-    })
+  // 注册全局路由守卫
+  const unregisterHook = router.beforeEach((to, from, next) => {
+    if (from.name === 'exam') {
+      handleRouteLeave(next)
+    } else {
+      next()
+    }
+  })
+
+  // 组件卸载时清理路由守卫
+  onBeforeUnmount(() => {
+    unregisterHook()
+    window.removeEventListener('beforeunload', handleBeforeUnload)
+  })
 })
 </script>
 
 <style scoped>
 .border-b {
-    border-bottom: 1px solid #374151;
+  border-bottom: 1px solid #374151;
 }
 
 :root {
-    --primary-color: #42d583;
+  --primary-color: #42d583;
 }
 
 .text-primary {
-    color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 .dark\:bg-green-900\/20 {
-    background-color: rgba(6, 78, 59, 0.2);
+  background-color: rgba(6, 78, 59, 0.2);
 }
 
 .dark\:bg-red-900\/20 {
-    background-color: rgba(127, 29, 29, 0.2);
+  background-color: rgba(127, 29, 29, 0.2);
 }
 </style>
