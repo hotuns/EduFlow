@@ -39,9 +39,9 @@
         实际路径：{{ videoUrl }}
       </div>
       <!-- 视频播放器容器 -->
-      <div class="relative flex-1">
+      <div class="relative flex-1 min-h-0">
         <video ref="videoRef"
-               class="w-full h-full bg-gray-800 rounded-lg"
+               class="w-full h-full object-contain bg-gray-800 rounded-lg"
                @timeupdate="handleTimeUpdate"
                @ended="handleVideoEnd">
           <source :src="videoUrl"
@@ -490,6 +490,7 @@ video::-webkit-media-controls-enclosure {
 /* 确保视频容器样式正确 */
 .relative {
   position: relative;
+  height: 100%;
 }
 
 .absolute {
@@ -501,6 +502,20 @@ video::-webkit-media-controls-enclosure {
   right: 0;
   bottom: 0;
   left: 0;
+}
+
+/* 视频容器样式 */
+.flex-1 {
+  flex: 1 1 0%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 视频元素样式 */
+video {
+  max-height: calc(100vh - 250px);
+  margin: 0 auto;
 }
 
 /* 播放按钮悬停效果 */
