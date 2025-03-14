@@ -577,19 +577,42 @@ const fillRules = computed(() => {
 
 // 计算简答题得分
 const calculateEssayScore = (answer: string, keywords: string[]) => {
-  if (!answer || !keywords.length) return 0
+  console.log('answer', answer)
+  console.log('keywords', keywords)
+  if (!answer || !keywords.length) {
+    console.log('答案或关键词为空，得分为0')
+    return 0
+  }
 
   // 将答案转换为小写以进行不区分大小写的匹配
   const lowerAnswer = answer.toLowerCase()
+  const lowerKeywords = keywords.map(k => k.toLowerCase())
 
-  // 计算匹配的关键词数量
-  const matchedKeywords = keywords.filter((keyword) =>
-    lowerAnswer.includes(keyword.toLowerCase())
-  )
+  // 计算匹配的关键词数量，添加容错处理
+  const matchedKeywords = lowerKeywords.filter((keyword) => {
+    // 移除关键词中的空格，增加匹配的容错性
+    const cleanKeyword = keyword.replace(/\s+/g, '')
+    const cleanAnswer = lowerAnswer.replace(/\s+/g, '')
+    return cleanAnswer.includes(cleanKeyword)
+  })
 
   // 按关键词匹配比例计算得分
   const matchRatio = matchedKeywords.length / keywords.length
-  return Math.floor(matchRatio * questionScores.value.essay)
+  const score = Math.round(matchRatio * questionScores.value.essay)
+
+  // 输出详细的得分计算过程
+  console.log('简答题得分计算:', {
+    totalKeywords: keywords.length,
+    matchedKeywords: matchedKeywords.length,
+    matchRatio,
+    maxScore: questionScores.value.essay,
+    finalScore: score,
+    matchedKeywordsList: matchedKeywords,
+    unmatchedKeywords: lowerKeywords.filter(k => !matchedKeywords.includes(k)),
+    calculation: `${matchRatio} * ${questionScores.value.essay} = ${score}`
+  })
+
+  return score
 }
 
 const showScoreModal = ref(false)
