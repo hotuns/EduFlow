@@ -1,77 +1,88 @@
 <template>
-    <div class="w-full h-full p-8 ">
-        <!-- 操作按钮 -->
-        <div class="flex justify-center w-ful space-x-4">
-            <n-button type="primary" @click="exportAsPNG" :loading="exporting">
-                <template #icon>
-                    <div class="i-carbon-image"></div>
-                </template>
-                导出为图片
-            </n-button>
-            <n-button type="info" @click="exportAsPDF" :loading="exporting">
-                <template #icon>
-                    <div class="i-carbon-document-pdf"></div>
-                </template>
-                导出为PDF
-            </n-button>
+  <div class="w-full h-full p-8 ">
+    <!-- 操作按钮 -->
+    <div class="flex justify-center w-ful space-x-4">
+      <n-button type="primary"
+                @click="exportAsPNG"
+                :loading="exporting">
+        <template #icon>
+          <div class="i-carbon-image"></div>
+        </template>
+        导出为图片
+      </n-button>
+      <n-button type="info"
+                @click="exportAsPDF"
+                :loading="exporting">
+        <template #icon>
+          <div class="i-carbon-document-pdf"></div>
+        </template>
+        导出为PDF
+      </n-button>
+    </div>
+
+    <n-card class="w-full mt-8 dark:bg-gray-800 rounded-lg">
+      <div ref="resultRef"
+           class="p-8">
+        <!-- 水印背景 -->
+        <div class="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
+          <div class="transform rotate-30 text-9xl font-bold dark:text-gray-700">
+            {{ userInfo?.name }} {{ certificateNo }}
+          </div>
         </div>
 
-        <n-card class="w-full mt-8 dark:bg-gray-800 rounded-lg">
-            <div ref="resultRef" class="p-8">
-                <!-- 水印背景 -->
-                <div class="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
-                    <div class="transform rotate-30 text-9xl font-bold dark:text-gray-700">
-                        {{ userInfo?.name }} {{ certificateNo }}
-                    </div>
-                </div>
+        <!-- 证书标题 -->
+        <div class="text-center">
+          <p class="text-3xl font-bold m-1 dark:text-gray-100">成绩证书</p>
+          <p class="dark:text-gray-400">证书编号：{{ certificateNo }}</p>
+        </div>
 
-                <!-- 证书标题 -->
-                <div class="text-center">
-                    <p class="text-3xl font-bold m-1 dark:text-gray-100">成绩证书</p>
-                    <p class="dark:text-gray-400">证书编号：{{ certificateNo }}</p>
-                </div>
+        <!-- 用户信息 -->
+        <div class="mb-8 leading-loose">
+          <div class="text-lg mb-4 dark:text-gray-300">
+            尊敬的 <span class="font-bold text-xl text-emerald-400">{{ userInfo?.name }}</span> 同学：
+          </div>
+          <div class="dark:text-gray-400">
+            恭喜您完成了全部课程学习并通过考试。现特发此证书，以资鼓励！
+          </div>
+        </div>
 
-                <!-- 用户信息 -->
-                <div class="mb-8 leading-loose">
-                    <div class="text-lg mb-4 dark:text-gray-300">
-                        尊敬的 <span class="font-bold text-xl text-emerald-400">{{ userInfo?.name }}</span> 同学：
-                    </div>
-                    <div class="dark:text-gray-400">
-                        恭喜您完成了全部课程学习并通过考试。现特发此证书，以资鼓励！
-                    </div>
-                </div>
-
-                <!-- 成绩展示 -->
-                <div class="flex flex-col justify-center items-center mb-12 dark:bg-gray-700/30 rounded-lg p-6">
-                    <div class="text-center">
-                        <div class="text-7xl font-bold text-emerald-400 mb-2">
-                            {{ latestExamRecord?.score }}
-                        </div>
-                        <div class="dark:text-gray-400">总分</div>
-                    </div>
-                    <n-divider class="dark:bg-gray-600" />
-                    <div class="text-center">
-                        <div class="text-4xl font-bold text-emerald-400 mb-2">
-                            {{ formatDate(latestExamRecord?.time) }}
-                        </div>
-                        <div class="dark:text-gray-400">考试时间</div>
-                    </div>
-                </div>
-
-                <!-- 签章区域 -->
-                <div class="flex justify-between items-end mt-12">
-                    <div class="dark:text-gray-400 text-sm">
-                        发证日期：{{ formatDate(new Date()) }}
-                    </div>
-                </div>
+        <!-- 成绩展示 -->
+        <div class="flex flex-col justify-center items-center mb-12 dark:bg-gray-700/30 rounded-lg p-6">
+          <div class="text-center">
+            <div class="text-7xl font-bold text-emerald-400 mb-2">
+              {{ latestExamRecord?.score }}
             </div>
-        </n-card>
+            <div class="dark:text-gray-400">总分</div>
+          </div>
+          <n-divider class="dark:bg-gray-600" />
+          <div class="text-center">
+            <div class="text-4xl font-bold text-emerald-400 mb-2">
+              {{ formatDate(latestExamRecord?.time) }}
+            </div>
+            <div class="dark:text-gray-400">考试时间</div>
+          </div>
+        </div>
 
-        <!-- 重新开始确认对话框 -->
-        <n-modal v-model:show="showConfirm" preset="dialog" type="warning" title="提示" content="重新开始之前，请先导出保存您的学习证明。"
-            positive-text="已经保存了" negative-text="还没保存" @positive-click="confirmRestart"
-            @negative-click="showConfirm = false" />
-    </div>
+        <!-- 签章区域 -->
+        <div class="flex justify-between items-end mt-12">
+          <div class="dark:text-gray-400 text-sm">
+            发证日期：{{ formatDate(new Date()) }}
+          </div>
+        </div>
+      </div>
+    </n-card>
+
+    <!-- 重新开始确认对话框 -->
+    <n-modal v-model:show="showConfirm"
+             preset="dialog"
+             type="warning"
+             title="提示"
+             content="重新开始之前，请先导出保存您的学习证明。"
+             positive-text="已经保存了"
+             negative-text="还没保存"
+             @positive-click="confirmRestart"
+             @negative-click="showConfirm = false" />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -80,13 +91,26 @@ import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
 import { storeToRefs } from 'pinia'
 
+// 添加 props 定义，接收传入的考试记录
+const props = defineProps({
+  examRecord: {
+    type: Object,
+    default: null,
+  },
+})
+
 const userStore = useUserStore()
 const { currentUser } = storeToRefs(userStore)
-const userInfo = computed(() => userStore.getUserInfo(currentUser.value?.name || ''))
+const userInfo = computed(() =>
+  userStore.getUserInfo(currentUser.value?.name || '')
+)
 
-// 获取最新的考试记录
+// 获取考试记录，优先使用传入的记录，如果没有则使用最新的记录
 const latestExamRecord = computed(() => {
-    return userInfo.value?.examRecords?.slice(-1)[0]
+  if (props.examRecord) {
+    return props.examRecord
+  }
+  return userInfo.value?.examRecords?.slice(-1)[0]
 })
 
 const resultRef = ref<HTMLElement>()
@@ -97,79 +121,83 @@ const showConfirm = ref(false)
 
 // 生成证书编号
 const certificateNo = computed(() => {
-    const timestamp = latestExamRecord.value?.time || Date.now()
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
-    return `CERT-${timestamp.toString(36)}-${random}`
+  const timestamp = latestExamRecord.value?.time || Date.now()
+  const random = Math.floor(Math.random() * 1000)
+    .toString()
+    .padStart(3, '0')
+  return `CERT-${timestamp.toString(36)}-${random}`
 })
 
 // 格式化日期
 const formatDate = (date: Date | number | undefined) => {
-    if (!date) return ''
-    const d = new Date(date)
-    return d.toLocaleDateString('zh-CN', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    })
+  if (!date) return ''
+  const d = new Date(date)
+  return d.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
 }
 
 // 导出为PNG
 const exportAsPNG = async () => {
-    if (!resultRef.value) return
-    exporting.value = true
+  if (!resultRef.value) return
+  exporting.value = true
 
-    try {
-        const canvas = await html2canvas(resultRef.value, {
-            scale: 2,
-            useCORS: true,
-        })
+  try {
+    const canvas = await html2canvas(resultRef.value, {
+      scale: 2,
+      useCORS: true,
+    })
 
-        // 创建下载链接
-        const link = document.createElement('a')
-        link.download = `学习证明_${userInfo.value?.name}_${new Date().getTime()}.png`
-        link.href = canvas.toDataURL('image/png')
-        link.click()
+    // 创建下载链接
+    const link = document.createElement('a')
+    link.download = `学习证明_${
+      userInfo.value?.name
+    }_${new Date().getTime()}.png`
+    link.href = canvas.toDataURL('image/png')
+    link.click()
 
-        message.success('导出成功')
-    } catch (error) {
-        message.error('导出失败，请重试')
-    } finally {
-        exporting.value = false
-    }
+    message.success('导出成功')
+  } catch (error) {
+    message.error('导出失败，请重试')
+  } finally {
+    exporting.value = false
+  }
 }
 
 // 导出为PDF
 const exportAsPDF = async () => {
-    if (!resultRef.value) return
-    exporting.value = true
+  if (!resultRef.value) return
+  exporting.value = true
 
-    try {
-        const canvas = await html2canvas(resultRef.value, {
-            scale: 2,
-            useCORS: true
-        })
+  try {
+    const canvas = await html2canvas(resultRef.value, {
+      scale: 2,
+      useCORS: true,
+    })
 
-        const imgData = canvas.toDataURL('image/png')
-        const pdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'px',
-            format: [canvas.width / 2, canvas.height / 2]
-        })
+    const imgData = canvas.toDataURL('image/png')
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'px',
+      format: [canvas.width / 2, canvas.height / 2],
+    })
 
-        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2)
-        pdf.save(`学习证明_${userInfo.value?.name}_${new Date().getTime()}.pdf`)
+    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2)
+    pdf.save(`学习证明_${userInfo.value?.name}_${new Date().getTime()}.pdf`)
 
-        message.success('导出成功')
-    } catch (error) {
-        message.error('导出失败，请重试')
-    } finally {
-        exporting.value = false
-    }
+    message.success('导出成功')
+  } catch (error) {
+    message.error('导出失败，请重试')
+  } finally {
+    exporting.value = false
+  }
 }
 
 // 确认重新开始
 const confirmRestart = () => {
-    emit('restart')
+  emit('restart')
 }
 </script>
 

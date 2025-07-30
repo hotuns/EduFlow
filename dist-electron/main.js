@@ -9,7 +9,7 @@ var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read fr
 var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
 var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
 var _validator, _encryptionKey, _options, _defaultValues;
-import electron, { ipcMain, app, shell, BrowserWindow } from "electron";
+import electron, { app as app$1, ipcMain as ipcMain$1, BrowserWindow } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -29701,11 +29701,12 @@ var scopedChars = {
   HEX: HEX$1
 };
 const { HEX } = scopedChars;
+const IPV4_REG = /^(?:(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)$/u;
 function normalizeIPv4$1(host) {
   if (findToken(host, ".") < 3) {
     return { host, isIPV4: false };
   }
-  const matches = host.match(/^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/u) || [];
+  const matches = host.match(IPV4_REG) || [];
   const [address] = matches;
   if (address) {
     return { host: stripLeadingZeros(address, "."), isIPV4: true };
@@ -29791,7 +29792,7 @@ function getIPV6(input) {
   output.address = address.join("");
   return output;
 }
-function normalizeIPv6$1(host, opts = {}) {
+function normalizeIPv6$1(host) {
   if (findToken(host, ":") < 2) {
     return { host, isIPV6: false };
   }
@@ -29888,7 +29889,7 @@ function normalizeComponentEncoding$1(components, esc) {
   }
   return components;
 }
-function recomposeAuthority$1(components, options) {
+function recomposeAuthority$1(components) {
   const uriTokens = [];
   if (components.userinfo !== void 0) {
     uriTokens.push(components.userinfo);
@@ -29900,7 +29901,7 @@ function recomposeAuthority$1(components, options) {
     if (ipV4res.isIPV4) {
       host = ipV4res.host;
     } else {
-      const ipV6res = normalizeIPv6$1(ipV4res.host, { isIPV4: false });
+      const ipV6res = normalizeIPv6$1(ipV4res.host);
       if (ipV6res.isIPV6 === true) {
         host = `[${ipV6res.escapedHost}]`;
       } else {
@@ -29923,7 +29924,7 @@ var utils = {
   normalizeIPv6: normalizeIPv6$1,
   stringArrayToHexStripped
 };
-const UUID_REG = /^[\da-f]{8}\b-[\da-f]{4}\b-[\da-f]{4}\b-[\da-f]{4}\b-[\da-f]{12}$/iu;
+const UUID_REG = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/iu;
 const URN_REG = /([\da-z][\d\-a-z]{0,31}):((?:[\w!$'()*+,\-.:;=@]|%[\da-f]{2})+)/iu;
 function isSecure(wsComponents) {
   return typeof wsComponents.secure === "boolean" ? wsComponents.secure : String(wsComponents.scheme).toLowerCase() === "wss";
@@ -30179,7 +30180,7 @@ function serialize(cmpts, opts) {
   if (options.reference !== "suffix" && components.scheme) {
     uriTokens.push(components.scheme, ":");
   }
-  const authority = recomposeAuthority(components, options);
+  const authority = recomposeAuthority(components);
   if (authority !== void 0) {
     if (options.reference !== "suffix") {
       uriTokens.push("//");
@@ -30207,7 +30208,7 @@ function serialize(cmpts, opts) {
   }
   return uriTokens.join("");
 }
-const hexLookUp = Array.from({ length: 127 }, (v, k) => /[^!"$&'()*+,\-.;=_`a-z{}~]/u.test(String.fromCharCode(k)));
+const hexLookUp = Array.from({ length: 127 }, (_v, k) => /[^!"$&'()*+,\-.;=_`a-z{}~]/u.test(String.fromCharCode(k)));
 function nonSimpleDomain(value) {
   let code2 = 0;
   for (let i = 0, len = value.length; i < len; ++i) {
@@ -30248,7 +30249,7 @@ function parse$7(uri2, opts) {
     if (parsed.host) {
       const ipv4result = normalizeIPv4(parsed.host);
       if (ipv4result.isIPV4 === false) {
-        const ipv6result = normalizeIPv6(ipv4result.host, { isIPV4: false });
+        const ipv6result = normalizeIPv6(ipv4result.host);
         parsed.host = ipv6result.host.toLowerCase();
         isIP = ipv6result.isIPV6;
       } else {
@@ -30256,7 +30257,7 @@ function parse$7(uri2, opts) {
         isIP = true;
       }
     }
-    if (parsed.scheme === void 0 && parsed.userinfo === void 0 && parsed.host === void 0 && parsed.port === void 0 && !parsed.path && parsed.query === void 0) {
+    if (parsed.scheme === void 0 && parsed.userinfo === void 0 && parsed.host === void 0 && parsed.port === void 0 && parsed.query === void 0 && !parsed.path) {
       parsed.reference = "same-document";
     } else if (parsed.scheme === void 0) {
       parsed.reference = "relative";
@@ -30285,10 +30286,10 @@ function parse$7(uri2, opts) {
       if (gotEncoding && parsed.host !== void 0) {
         parsed.host = unescape(parsed.host);
       }
-      if (parsed.path !== void 0 && parsed.path.length) {
+      if (parsed.path) {
         parsed.path = escape(unescape(parsed.path));
       }
-      if (parsed.fragment !== void 0 && parsed.fragment.length) {
+      if (parsed.fragment) {
         parsed.fragment = encodeURI(decodeURIComponent(parsed.fragment));
       }
     }
@@ -36162,6 +36163,7 @@ _validator = new WeakMap();
 _encryptionKey = new WeakMap();
 _options = new WeakMap();
 _defaultValues = new WeakMap();
+const { app, ipcMain, shell } = electron;
 let isInitialized = false;
 const initDataListener = () => {
   if (!ipcMain || !app) {
@@ -36227,13 +36229,13 @@ const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
 const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
 let win;
-const DATA_DIR = app.isPackaged ? path.join(process.resourcesPath, "data") : path.join(process.env.APP_ROOT, "data");
-console.log("App is packaged:", app.isPackaged);
+const DATA_DIR = app$1.isPackaged ? path.join(process.resourcesPath, "data") : path.join(process.env.APP_ROOT, "data");
+console.log("App is packaged:", app$1.isPackaged);
 console.log("Resource path:", process.resourcesPath);
 console.log("APP_ROOT:", process.env.APP_ROOT);
 console.log("Data directory:", DATA_DIR);
-ipcMain.handle("get-data-path", () => DATA_DIR);
-ipcMain.handle("load-json", async (_, filename) => {
+ipcMain$1.handle("get-data-path", () => DATA_DIR);
+ipcMain$1.handle("load-json", async (_, filename) => {
   const filePath = path.join(DATA_DIR, filename);
   try {
     if (!fs$1.existsSync(DATA_DIR)) {
@@ -36246,11 +36248,11 @@ ipcMain.handle("load-json", async (_, filename) => {
     return [];
   }
 });
-ipcMain.handle("check-file-exists", async (_, filepath) => {
+ipcMain$1.handle("check-file-exists", async (_, filepath) => {
   const fullPath = path.join(DATA_DIR, filepath);
   return fs$1.existsSync(fullPath);
 });
-ipcMain.handle("load-excel", async (_, filename) => {
+ipcMain$1.handle("load-excel", async (_, filename) => {
   const filePath = path.join(DATA_DIR, filename);
   console.log("Trying to load Excel file:", filePath);
   try {
@@ -36327,18 +36329,18 @@ function createWindow() {
     win.loadFile(path.join(RENDERER_DIST, "index.html"));
   }
 }
-app.on("window-all-closed", () => {
+app$1.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
-    app.quit();
+    app$1.quit();
     win = null;
   }
 });
-app.on("activate", () => {
+app$1.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
 });
-app.whenReady().then(createWindow);
+app$1.whenReady().then(createWindow);
 export {
   MAIN_DIST,
   RENDERER_DIST,

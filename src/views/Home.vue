@@ -10,8 +10,8 @@
 
       <div class="content">
         <h1 class="title">
-          欢迎进入<span class="text-emerald-400">技术勤务站</span>
-          <span>测控设备外场标校评估系统软件</span>
+          <div>无人机教学</div>
+          <div>培训软件</div>
         </h1>
         <p class="subtitle">
           开启您的学习之旅，提升专业技能
@@ -70,7 +70,7 @@ const goToExam = () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(238, 238, 238, 0.8);
   backdrop-filter: blur(1px);
 }
 
@@ -117,7 +117,7 @@ const goToExam = () => {
 }
 
 .feature-card {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(247, 243, 243, 0.92);
   border: 1px solid rgba(229, 231, 235, 1);
   padding: 1.5rem;
   border-radius: 12px;
@@ -128,7 +128,7 @@ const goToExam = () => {
 
 .feature-card:hover {
   transform: translateY(-5px);
-  background: rgba(255, 255, 255, 1);
+  background: rgba(255, 255, 255, 0.2);
   border-color: rgba(16, 185, 129, 0.3);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
 }

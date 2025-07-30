@@ -191,6 +191,11 @@ export const useUserStore = defineStore('user', {
           : [newRecord];
         console.log('保存考试结果', user);
         this.users = this.users.map((u) => (u.name === userName ? user : u));
+        
+        // 如果当前用户就是更新的用户，也更新 currentUser
+        if (this.currentUser && this.currentUser.name === userName) {
+          this.currentUser = { ...user };
+        }
       }
     },
 
