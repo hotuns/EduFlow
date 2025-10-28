@@ -1,55 +1,49 @@
 <template>
-  <div class="home-container"
-       :style="{ backgroundImage: `url(${bgGif})` }">
+  <div class="home-container" :style="{ backgroundImage: `url(${bgGif})` }">
     <div class="overlay"></div>
 
     <div class="content-wrapper">
-      <div class="logo-area">
-
-      </div>
+      <div class="logo-area"></div>
 
       <div class="content">
         <h1 class="title">
           <div>无人机教学</div>
           <div>培训软件</div>
         </h1>
-        <p class="subtitle">
-          开启您的学习之旅，提升专业技能
-        </p>
+        <p class="subtitle">开启您的学习之旅，提升专业技能</p>
 
         <div class="features">
-          <div class="feature-card cursor-pointer"
-               @click="goToLearn">
+          <div class="feature-card cursor-pointer" @click="goToLearn">
             <div class="i-carbon-video text-3xl text-emerald-400 mb-2"></div>
             <h3>视频学习</h3>
             <p>专业教学视频</p>
           </div>
-          <div class="feature-card cursor-pointer"
-               @click="goToExam">
-            <div class="i-carbon-exam-mode text-3xl text-emerald-400 mb-2"></div>
+          <div class="feature-card cursor-pointer" @click="goToExam">
+            <div
+              class="i-carbon-exam-mode text-3xl text-emerald-400 mb-2"
+            ></div>
             <h3>真题学习</h3>
             <p>经典真题练习</p>
           </div>
         </div>
-
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
-import bgGif from '../assets/ZY500.gif?url'
+import { useRouter } from "vue-router";
+import bgGif from "../assets/ZY500.gif?url";
 
-const router = useRouter()
+const router = useRouter();
 
 const goToLearn = () => {
-  router.push({ name: 'learn', query: { tab: 'video' } })
-}
+  router.push({ name: "learn", query: { tab: "video" } });
+};
 
 const goToExam = () => {
-  router.push({ name: 'learn', query: { tab: 'questions' } })
-}
+  router.push({ name: "learn", query: { tab: "questions" } });
+};
 </script>
 
 <style scoped>

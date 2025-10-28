@@ -1,27 +1,27 @@
 <template>
   <n-layout class="h-screen">
     <!-- 标题栏（类似窗口标题栏） -->
-    <n-layout-header
+    <!-- <n-layout-header
       class="h-10 flex items-center px-4 bg-gradient-to-r from-emerald-500 to-emerald-600"
     >
       <div class="flex items-center gap-2 text-white">
         <div class="i-carbon-drone text-lg"></div>
         <span class="text-sm font-medium">无人机培训系统</span>
       </div>
-    </n-layout-header>
+    </n-layout-header> -->
 
     <!-- 工具栏（包含主要功能按钮） -->
     <n-layout-header bordered class="h-16 px-4 bg-gray-50">
       <div class="h-full flex items-center justify-between">
         <div class="flex items-center gap-2">
           <n-button-group>
-            <n-button
+            <!-- <n-button
               @click="router.push({ name: 'home' })"
               :type="route.name === 'home' ? 'primary' : 'default'"
             >
               <template #icon><div class="i-carbon-home"></div></template>
               首页
-            </n-button>
+            </n-button> -->
             <n-button
               @click="router.push({ name: 'learn' })"
               :type="route.name === 'learn' ? 'primary' : 'default'"
@@ -111,12 +111,12 @@ function renderIcon(icon: string) {
 }
 
 const menuOptions: MenuOption[] = [
-  {
-    label: () =>
-      h(RouterLink, { to: { name: "home" } }, { default: () => "首页" }),
-    key: "home",
-    icon: renderIcon("i-carbon-home"),
-  },
+  //   {
+  //     label: () =>
+  //       h(RouterLink, { to: { name: "home" } }, { default: () => "首页" }),
+  //     key: "home",
+  //     icon: renderIcon("i-carbon-home"),
+  //   },
   {
     label: () =>
       h(RouterLink, { to: { name: "learn" } }, { default: () => "学习培训" }),
