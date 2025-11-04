@@ -13,15 +13,15 @@
     <!-- 工具栏（包含主要功能按钮） -->
     <n-layout-header bordered class="h-16 px-4 bg-gray-50">
       <div class="h-full flex items-center justify-between">
-        <div class="flex items-center gap-2">
+        <div v-if="route.name !== 'home'" class="flex items-center gap-2">
           <n-button-group>
-            <!-- <n-button
+            <n-button
               @click="router.push({ name: 'home' })"
               :type="route.name === 'home' ? 'primary' : 'default'"
             >
               <template #icon><div class="i-carbon-home"></div></template>
               首页
-            </n-button> -->
+            </n-button>
             <n-button
               @click="router.push({ name: 'learn' })"
               :type="route.name === 'learn' ? 'primary' : 'default'"
@@ -57,7 +57,7 @@
         </div>
 
         <!-- 用户信息 -->
-        <div v-if="currentUser" class="flex items-center gap-3">
+        <div v-if="currentUser" class="flex items-center gap-3" :class="{ 'ml-auto': route.name === 'home' }">
           <n-badge>
             <n-avatar round size="small">{{ currentUser.name[0] }}</n-avatar>
           </n-badge>
@@ -167,7 +167,7 @@ const handleLogout = () => {
 
 .n-layout-content {
   position: relative;
-  height: calc(100vh - 104px); /* 减去标题栏和工具栏的高度 */
+  height: calc(100vh - 64px); /* 减去工具栏的高度 */
   overflow-y: auto;
 }
 </style>

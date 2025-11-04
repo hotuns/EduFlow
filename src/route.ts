@@ -4,8 +4,12 @@ import { useUserStore } from "./store";
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
-    { name: "index", path: "/", redirect: "/learn" },
-    // { name: 'home', path: '/home', component: () => import('./views/Home.vue') },
+    { name: "index", path: "/", redirect: "/home" },
+    {
+      name: "home",
+      path: "/home",
+      component: () => import("./views/Home.vue"),
+    },
     {
       name: "learn",
       path: "/learn",

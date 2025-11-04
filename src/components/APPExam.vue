@@ -45,7 +45,7 @@
       </div>
 
       <!--  扩展题部分 -->
-      <div class="mb-8">
+      <!-- <div class="mb-8">
         <div class="text-lg font-bold mb-4 pb-2 border-b">
           扩展题（每题{{ questionScores.expand }}分，共{{
             expandQuestions.length * questionScores.expand
@@ -79,7 +79,7 @@
             </n-form-item>
           </div>
         </n-form>
-      </div>
+      </div> -->
 
       <!-- 判断题部分 -->
       <div class="mb-8">
@@ -116,7 +116,7 @@
       </div>
 
       <!-- 多选题部分 -->
-      <div class="mb-8">
+      <!-- <div class="mb-8">
         <div class="text-lg font-bold mb-4 pb-2 border-b">
           多选题（每题{{ questionScores.multiple }}分，共{{
             multipleQuestions.length * questionScores.multiple
@@ -152,10 +152,10 @@
             </n-form-item>
           </div>
         </n-form>
-      </div>
+      </div> -->
 
       <!-- 填空题部分 -->
-      <div class="mb-8">
+      <!-- <div class="mb-8">
         <div class="text-lg font-bold mb-4 pb-2 border-b">
           填空题（每题{{ questionScores.fill }}分，共{{
             fillQuestions.length * questionScores.fill
@@ -179,10 +179,10 @@
             </n-form-item>
           </div>
         </n-form>
-      </div>
+      </div> -->
 
       <!-- 简答题部分 -->
-      <div class="mb-8">
+      <!-- <div class="mb-8">
         <div class="text-lg font-bold mb-4 pb-2 border-b">
           简答题（每题{{ questionScores.essay }}分，共{{
             essayQuestions.length * questionScores.essay
@@ -207,7 +207,7 @@
             </n-form-item>
           </div>
         </n-form>
-      </div>
+      </div> -->
 
       <!-- 提交按钮 -->
       <div class="flex justify-center mt-8">

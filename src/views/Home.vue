@@ -7,8 +7,8 @@
 
       <div class="content">
         <h1 class="title">
-          <div>无人机教学</div>
-          <div>培训软件</div>
+          <div>海防无人机教学</div>
+          <div>系统</div>
         </h1>
         <p class="subtitle">开启您的学习之旅，提升专业技能</p>
 
@@ -24,6 +24,13 @@
             ></div>
             <h3>真题学习</h3>
             <p>经典真题练习</p>
+          </div>
+          <div class="feature-card cursor-pointer" @click="goToTest">
+            <div
+              class="i-carbon-test-tool text-3xl text-emerald-400 mb-2"
+            ></div>
+            <h3>模拟考试</h3>
+            <p>真实模拟考试</p>
           </div>
         </div>
       </div>
@@ -43,6 +50,10 @@ const goToLearn = () => {
 
 const goToExam = () => {
   router.push({ name: "learn", query: { tab: "questions" } });
+};
+
+const goToTest = () => {
+  router.push({ name: "exam" });
 };
 </script>
 
@@ -104,8 +115,8 @@ const goToExam = () => {
 }
 
 .features {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  display: flex;
+  justify-content: center;
   gap: 2rem;
   margin-top: 3rem;
 }
@@ -118,6 +129,8 @@ const goToExam = () => {
   transition: all 0.3s ease;
   cursor: pointer;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 220px;
+  flex-shrink: 0;
 }
 
 .feature-card:hover {
