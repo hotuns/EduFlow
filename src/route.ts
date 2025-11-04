@@ -38,15 +38,15 @@ router.beforeEach((to, from, next) => {
   const userStore = useUserStore();
 
   // 如果未登录且不是访问登录页
-  if (!userStore.getCurrentUser && to.name !== "learn") {
-    next({ name: "learn" });
+  if (!userStore.getCurrentUser && to.name !== "home") {
+    next({ name: "home" });
     return;
   }
 
   // 如果用户不是管理员且访问管理员页面，重定向到首页
   if (userStore.getCurrentUser?.type !== "admin" && to.name === "admin") {
     alert("您没有权限访问此页面");
-    next({ name: "learn" });
+    next({ name: "home" });
     return;
   }
 

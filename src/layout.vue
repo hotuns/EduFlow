@@ -57,7 +57,11 @@
         </div>
 
         <!-- 用户信息 -->
-        <div v-if="currentUser" class="flex items-center gap-3" :class="{ 'ml-auto': route.name === 'home' }">
+        <div
+          v-if="currentUser"
+          class="flex items-center gap-3"
+          :class="{ 'ml-auto': route.name === 'home' }"
+        >
           <n-badge>
             <n-avatar round size="small">{{ currentUser.name[0] }}</n-avatar>
           </n-badge>
@@ -111,12 +115,12 @@ function renderIcon(icon: string) {
 }
 
 const menuOptions: MenuOption[] = [
-  //   {
-  //     label: () =>
-  //       h(RouterLink, { to: { name: "home" } }, { default: () => "首页" }),
-  //     key: "home",
-  //     icon: renderIcon("i-carbon-home"),
-  //   },
+  {
+    label: () =>
+      h(RouterLink, { to: { name: "home" } }, { default: () => "首页" }),
+    key: "home",
+    icon: renderIcon("i-carbon-home"),
+  },
   {
     label: () =>
       h(RouterLink, { to: { name: "learn" } }, { default: () => "学习培训" }),
@@ -145,9 +149,9 @@ const menuOptions: MenuOption[] = [
 
 // 处理退出登录
 const handleLogout = () => {
+  router.push("/home");
   userStore.logout();
   message.success("已退出登录");
-  router.push("/");
 };
 </script>
 
