@@ -7,8 +7,8 @@
 
       <div class="content">
         <h1 class="title">
-          <div>海防无人机教学</div>
-          <div>系统</div>
+          <div>海防无人机</div>
+          <div>教学系统</div>
         </h1>
         <p class="subtitle">开启您的学习之旅，提升专业技能</p>
 

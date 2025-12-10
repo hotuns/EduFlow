@@ -260,7 +260,7 @@
               </div>
 
               <!-- 扩展题得分 -->
-              <div class="flex justify-between items-center">
+              <!-- <div class="flex justify-between items-center">
                 <div class="font-medium">扩展题</div>
                 <div class="flex items-center space-x-2">
                   <span class="text-xl font-bold">{{
@@ -271,7 +271,7 @@
                     {{ expandQuestions.length * questionScores.expand }}</span
                   >
                 </div>
-              </div>
+              </div> -->
 
               <!-- 判断题得分 -->
               <div class="flex justify-between items-center">
@@ -290,7 +290,7 @@
               </div>
 
               <!-- 多选题得分 -->
-              <div class="flex justify-between items-center">
+              <!-- <div class="flex justify-between items-center">
                 <div class="font-medium">多选题</div>
                 <div class="flex items-center space-x-2">
                   <span class="text-xl font-bold">{{
@@ -303,10 +303,10 @@
                     }}</span
                   >
                 </div>
-              </div>
+              </div> -->
 
               <!-- 简答题得分 -->
-              <div class="flex justify-between items-center">
+              <!-- <div class="flex justify-between items-center">
                 <div class="font-medium">简答题</div>
                 <div class="flex items-center space-x-2">
                   <span class="text-xl font-bold">{{
@@ -316,10 +316,10 @@
                     >/ {{ essayQuestions.length * questionScores.essay }}</span
                   >
                 </div>
-              </div>
+              </div> -->
 
               <!-- 填空题得分 -->
-              <div class="flex justify-between items-center">
+              <!-- <div class="flex justify-between items-center">
                 <div class="font-medium">填空题</div>
                 <div class="flex items-center space-x-2">
                   <span class="text-xl font-bold">{{ scoreDetails.fill }}</span>
@@ -327,7 +327,7 @@
                     >/ {{ fillQuestions.length * questionScores.fill }}</span
                   >
                 </div>
-              </div>
+              </div> -->
             </div>
 
             <!-- 分割线 -->
